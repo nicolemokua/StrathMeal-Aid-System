@@ -4,13 +4,29 @@ import { Button, Container, TextField, Typography, Paper, Box } from "@mui/mater
 
 function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
+  const [message, setMessage] = useState("");
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Connect to backend
-    alert("Login submitted!");
+    setMessage("");
+    try {
+      const res = await fetch("http://localhost:5000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage("Login successful!");
+        // Optionally, store user info in localStorage or context here
+      } else {
+        setMessage(data.message || "Login failed.");
+      }
+    } catch (err) {
+      setMessage("Error connecting to server.");
+    }
   };
 
   return (
@@ -79,6 +95,7 @@ function Login() {
                 Login
               </Button>
             </form>
+            {message && <Typography sx={{ mt: 2 }} color="primary">{message}</Typography>}
           </Paper>
         </Container>
       </Box>

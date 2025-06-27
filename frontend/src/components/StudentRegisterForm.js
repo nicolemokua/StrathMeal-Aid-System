@@ -10,15 +10,30 @@ function StudentRegisterForm() {
     course: "",
     year_of_study: "",
   });
+  const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Connect to Flask backend
-    alert("Registration submitted!");
+    setMessage("");
+    try {
+      const res = await fetch("http://localhost:5000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (res.status === 201) {
+        setMessage("Registration successful!");
+      } else {
+        setMessage(data.message || "Registration failed.");
+      }
+    } catch (err) {
+      setMessage("Error connecting to server.");
+    }
   };
 
   return (
@@ -33,6 +48,7 @@ function StudentRegisterForm() {
         <TextField label="Year of Study" name="year_of_study" type="number" fullWidth margin="normal" onChange={handleChange} />
         <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>Register</Button>
       </form>
+      {message && <Typography sx={{ mt: 2 }} color="primary">{message}</Typography>}
     </Box>
   );
 }
