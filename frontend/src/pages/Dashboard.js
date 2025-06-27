@@ -1,111 +1,141 @@
 import React from "react";
 import Navbar from "../components/Navbar";
-import "../dashboard.css";
-import { Link } from "react-router-dom";
+import { Box, Typography, Paper, Grid, Avatar } from "@mui/material";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import BookIcon from "@mui/icons-material/Book";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 
-function Dashboard() {
+function getStudentProfile() {
+  // Example: fetch from localStorage or context
+  return {
+    name: localStorage.getItem("studentName") || "Student",
+    email: localStorage.getItem("studentEmail") || "student@strathmore.edu",
+    course: localStorage.getItem("studentCourse") || "Course",
+    yearOfStudy: localStorage.getItem("studentYear") || "1",
+    status: "pending",
+  };
+}
+
+export default function Dashboard() {
+  const profile = getStudentProfile();
+
   return (
     <>
       <Navbar />
-      <div className="dashboard-bg">
-        <div className="dashboard-grid">
-          {/* Sidebar */}
-          <aside className="sidebar">
-            <div className="sidebar-header">
-              <div className="avatar">👨‍🎓</div>
-              <h3>John Doe</h3>
-              <p>STR2024001</p>
-            </div>
-            <nav className="sidebar-nav">
-              <Link to="/dashboard" className="nav-item active">📊 Dashboard</Link>
-              <Link to="/dashboard/vouchers" className="nav-item">🎫 My Vouchers</Link>
-              <Link to="/dashboard/applications" className="nav-item">📋 Applications</Link>
-              <Link to="/dashboard/profile" className="nav-item">👤 Profile</Link>
-              <Link to="/dashboard/support" className="nav-item">📞 Support</Link>
-            </nav>
-          </aside>
-          {/* Main Content */}
-          <main className="main-content">
-            <div className="page-header">
-              <h2 className="page-title">Welcome Back, John!</h2>
-              <p className="page-subtitle">Here's your meal aid status for today</p>
-            </div>
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-number">3</div>
-                <div className="stat-label">Available Vouchers</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-number">45</div>
-                <div className="stat-label">Meals This Month</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-number">✅</div>
-                <div className="stat-label">Application Status</div>
-              </div>
-            </div>
-            <div className="content-section">
-              <div className="section-header">
-                <h3 className="section-title">Today's Meal Vouchers</h3>
-                <button className="btn btn-primary">View All</button>
-              </div>
-              <div style={{ display: "flex", gap: "20px" }}>
-                <div className="stat-card" style={{ background: "linear-gradient(135deg, #ff6b6b 0%, #feca57 100%)" }}>
-                  <div style={{ fontWeight: "bold", marginBottom: 10 }}>🍳 Breakfast</div>
-                  <div style={{ fontFamily: "monospace", background: "rgba(255,255,255,0.2)", borderRadius: 20, padding: "5px 15px", display: "inline-block", marginBottom: 10 }}>BF2024001</div>
-                  <div style={{ background: "white", color: "#333", borderRadius: 10, width: 80, height: 80, margin: "15px auto", display: "flex", alignItems: "center", justifyContent: "center" }}>QR CODE</div>
-                  <p>Valid until 10:00 AM</p>
-                  <button className="btn" style={{ background: "rgba(255,255,255,0.2)", color: "white", marginTop: 15 }}>Use Now</button>
-                </div>
-                <div className="stat-card" style={{ background: "linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)" }}>
-                  <div style={{ fontWeight: "bold", marginBottom: 10 }}>🍽️ Lunch</div>
-                  <div style={{ fontFamily: "monospace", background: "rgba(255,255,255,0.2)", borderRadius: 20, padding: "5px 15px", display: "inline-block", marginBottom: 10 }}>LN2024001</div>
-                  <div style={{ background: "white", color: "#333", borderRadius: 10, width: 80, height: 80, margin: "15px auto", display: "flex", alignItems: "center", justifyContent: "center" }}>QR CODE</div>
-                  <p>Valid until 3:00 PM</p>
-                  <button className="btn" style={{ background: "rgba(255,255,255,0.2)", color: "white", marginTop: 15 }}>Use Now</button>
-                </div>
-              </div>
-            </div>
-            <div className="content-section">
-              <div className="section-header">
-                <h3 className="section-title">Recent Meal History</h3>
-              </div>
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Meal Type</th>
-                    <th>Location</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Jun 06, 2025</td>
-                    <td>Lunch</td>
-                    <td>Main Cafeteria</td>
-                    <td><span className="status-badge status-approved">Received</span></td>
-                  </tr>
-                  <tr>
-                    <td>Jun 06, 2025</td>
-                    <td>Breakfast</td>
-                    <td>Main Cafeteria</td>
-                    <td><span className="status-badge status-approved">Received</span></td>
-                  </tr>
-                  <tr>
-                    <td>Jun 05, 2025</td>
-                    <td>Dinner</td>
-                    <td>Main Cafeteria</td>
-                    <td><span className="status-badge status-approved">Received</span></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </main>
-        </div>
-      </div>
+      <Box sx={{ minHeight: "100vh", background: "linear-gradient(135deg, #e0e7ef 0%, #e0f2f1 100%)", py: 6 }}>
+        <Box maxWidth="md" mx="auto">
+          {/* Welcome Banner */}
+          <Paper
+            elevation={4}
+            sx={{
+              mb: 4,
+              p: 4,
+              borderRadius: 4,
+              background: "linear-gradient(90deg, #134e4a 0%, #2dd4bf 100%)",
+              color: "#fff",
+              textAlign: "center",
+            }}
+          >
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+              Welcome to StrathMeal Aid, {profile.name}!
+            </Typography>
+            <Typography>
+              Your digital meal voucher system. Your profile is ready and under review.
+            </Typography>
+          </Paper>
+
+          {/* Profile Summary */}
+          <Paper elevation={2} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Avatar sx={{ bgcolor: "#2dd4bf", width: 56, height: 56, mr: 2 }}>
+                {profile.name[0]}
+              </Avatar>
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  {profile.name}
+                </Typography>
+                <Typography sx={{ color: "#1976d2" }}>{profile.email}</Typography>
+                <Typography sx={{ color: "#134e4a" }}>
+                  {profile.course} - Year {profile.yearOfStudy}
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
+                  <AccessTimeIcon sx={{ fontSize: 18, color: "#f59e42", mr: 0.5 }} />
+                  <Typography sx={{ fontSize: 14, color: "#f59e42" }}>
+                    Profile Under Review
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Paper>
+
+          {/* Stats Cards */}
+          <Grid container spacing={3} mb={4}>
+            <Grid item xs={12} md={4}>
+              <Paper sx={{ p: 3, borderRadius: 3, textAlign: "center" }}>
+                <CreditCardIcon sx={{ fontSize: 40, color: "#16a34a" }} />
+                <Typography variant="h6" sx={{ mt: 1, fontWeight: 700 }}>
+                  0
+                </Typography>
+                <Typography sx={{ color: "#666" }}>Active Vouchers</Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Paper sx={{ p: 3, borderRadius: 3, textAlign: "center" }}>
+                <CheckCircleIcon sx={{ fontSize: 40, color: "#1976d2" }} />
+                <Typography variant="h6" sx={{ mt: 1, fontWeight: 700 }}>
+                  0
+                </Typography>
+                <Typography sx={{ color: "#666" }}>Vouchers Used This Month</Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Paper sx={{ p: 3, borderRadius: 3, textAlign: "center" }}>
+                <BookIcon sx={{ fontSize: 40, color: "#a21caf" }} />
+                <Typography variant="h6" sx={{ mt: 1, fontWeight: 700 }}>
+                  Shs 0
+                </Typography>
+                <Typography sx={{ color: "#666" }}>Total Saved</Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          {/* Empty State */}
+          <Paper sx={{ p: 4, borderRadius: 3, textAlign: "center" }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+              My Meal Vouchers
+            </Typography>
+            <Typography sx={{ color: "#666", mb: 3 }}>
+              Your meal vouchers will appear here once your profile is approved.
+            </Typography>
+            <Grid container spacing={2} justifyContent="center">
+              <Grid item xs={12} md={6}>
+                <Paper sx={{ p: 2, borderRadius: 2, mb: 2, background: "#e0f2f1" }}>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <AccessTimeIcon sx={{ color: "#134e4a", mr: 1 }} />
+                    <Typography sx={{ fontWeight: 600 }}>Real-time Tracking</Typography>
+                  </Box>
+                  <Typography sx={{ color: "#134e4a" }}>
+                    Monitor voucher expiry times and usage history.
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Paper sx={{ p: 2, borderRadius: 2, mb: 2, background: "#e0f2f1" }}>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                    <LocationOnIcon sx={{ color: "#16a34a", mr: 1 }} />
+                    <Typography sx={{ fontWeight: 600 }}>Multiple Locations</Typography>
+                  </Box>
+                  <Typography sx={{ color: "#134e4a" }}>
+                    Use vouchers at any participating campus cafeteria.
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Box>
+      </Box>
     </>
   );
 }
-
-export default Dashboard;
