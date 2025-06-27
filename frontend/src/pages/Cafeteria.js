@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import {
   Box,
@@ -22,20 +22,32 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import BarChartIcon from "@mui/icons-material/BarChart";
 
 export default function Cafeteria() {
-  const [cafeteria] = useState({
-    cafeteriaId: 1,
-    name: "University Main Cafeteria",
-    location: "Central Campus Building A",
-    dailyVoucherCapacity: 300,
-    operatingHours: "07:00 - 20:00",
-  });
+  // Fetch cafeterias from localStorage
+  const [cafeterias, setCafeterias] = useState([]);
+
+  useEffect(() => {
+    // Get all keys that start with 'cafeteria_'
+    const cafeteriaKeys = Object.keys(localStorage).filter((k) =>
+      k.startsWith("cafeteria_")
+    );
+    const cafeteriaList = cafeteriaKeys.map((k) =>
+      JSON.parse(localStorage.getItem(k))
+    );
+    setCafeterias(cafeteriaList);
+  }, []);
 
   const [scanInput, setScanInput] = useState("");
   const [scanResult, setScanResult] = useState(null);
 
   const formatCurrency = (amount) => `KSh ${amount.toLocaleString()}`;
 
-  const StatCard = ({ title, value, icon, color = "#1976d2", gradient = false }) => (
+  const StatCard = ({
+    title,
+    value,
+    icon,
+    color = "#1976d2",
+    gradient = false,
+  }) => (
     <Paper
       sx={{
         p: 3,
@@ -62,13 +74,23 @@ export default function Cafeteria() {
       <Typography variant="h6" sx={{ fontWeight: 700 }}>
         {value}
       </Typography>
-      <Typography sx={{ color: gradient ? "#e0f2f1" : "#666" }}>{title}</Typography>
+      <Typography sx={{ color: gradient ? "#e0f2f1" : "#666" }}>
+        {title}
+      </Typography>
     </Paper>
   );
 
   const EmptyState = ({ icon, title, description, actionText }) => (
     <Box sx={{ textAlign: "center", py: 6 }}>
-      <Avatar sx={{ bgcolor: "#e0e7ef", width: 64, height: 64, mx: "auto", mb: 2 }}>
+      <Avatar
+        sx={{
+          bgcolor: "#e0e7ef",
+          width: 64,
+          height: 64,
+          mx: "auto",
+          mb: 2,
+        }}
+      >
         {icon}
       </Avatar>
       <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
@@ -85,70 +107,133 @@ export default function Cafeteria() {
 
   const scanVoucher = () => {
     if (!scanInput.trim()) {
-      setScanResult({ type: "error", message: "Please enter a voucher ID to scan" });
+      setScanResult({
+        type: "error",
+        message: "Please enter a voucher ID to scan",
+      });
       return;
     }
     setScanResult({
       type: "info",
-      message: "No vouchers in system yet. Start by allocating vouchers to students.",
+      message:
+        "No vouchers in system yet. Start by allocating vouchers to students.",
     });
   };
 
   return (
     <>
       <Navbar />
-      <Box sx={{ minHeight: "100vh", background: "linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%)", py: 4 }}>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          background:
+            "linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%)",
+          py: 4,
+        }}
+      >
         <Container maxWidth="lg">
           {/* Header */}
           <Paper sx={{ p: 4, mb: 4, borderRadius: 4 }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <Avatar sx={{ bgcolor: "#1976d2", width: 56, height: 56 }}>
-                  <CoffeeIcon />
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
+              Registered Cafeterias
+            </Typography>
+            {cafeterias.length === 0 ? (
+              <Box sx={{ textAlign: "center", py: 6 }}>
+                <Avatar
+                  sx={{
+                    bgcolor: "#e0e7ef",
+                    width: 64,
+                    height: 64,
+                    mx: "auto",
+                    mb: 2,
+                  }}
+                >
+                  <CoffeeIcon sx={{ fontSize: 40, color: "#1976d2" }} />
                 </Avatar>
-                <Box>
-                  <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                    {cafeteria.name}
-                  </Typography>
-                  <Typography sx={{ color: "#1976d2" }}>
-                    📍 {cafeteria.location} &nbsp; | &nbsp; ⏰ {cafeteria.operatingHours}
-                  </Typography>
-                  <Typography sx={{ color: "#16a34a", fontWeight: 500, fontSize: 15 }}>
-                    Daily Capacity: {cafeteria.dailyVoucherCapacity} vouchers
-                  </Typography>
-                </Box>
-              </Box>
-              <Box sx={{ textAlign: "right" }}>
-                <Typography sx={{ fontSize: 14, color: "#888" }}>System Status</Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Box sx={{ width: 10, height: 10, bgcolor: "#16a34a", borderRadius: "50%", mr: 1 }} />
-                  <Typography sx={{ color: "#16a34a", fontWeight: 700 }}>Online</Typography>
-                </Box>
-                <Typography sx={{ fontSize: 13, color: "#888" }}>
-                  {new Date().toLocaleDateString("en-US", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                  No Cafeterias Registered
+                </Typography>
+                <Typography sx={{ color: "#666", mb: 2 }}>
+                  Cafeterias will appear here once they are registered in the
+                  system.
                 </Typography>
               </Box>
-            </Box>
+            ) : (
+              <Grid container spacing={3}>
+                {cafeterias.map((caf, idx) => (
+                  <Grid
+                    item
+                    xs={12}
+                    md={6}
+                    lg={4}
+                    key={caf.cafeteriaId || idx}
+                  >
+                    <Paper sx={{ p: 3, borderRadius: 3, mb: 2 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 2,
+                        }}
+                      >
+                        <Avatar
+                          sx={{ bgcolor: "#1976d2", width: 56, height: 56 }}
+                        >
+                          <CoffeeIcon />
+                        </Avatar>
+                        <Box>
+                          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                            {caf.name}
+                          </Typography>
+                          <Typography sx={{ color: "#1976d2" }}>
+                            📍 {caf.location}
+                          </Typography>
+                          <Typography sx={{ color: "#888", fontSize: 14 }}>
+                            ID: {caf.cafeteriaId}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
           </Paper>
 
           {/* Stats Grid */}
           <Grid container spacing={3} mb={4}>
             <Grid item xs={12} md={3}>
-              <StatCard title="Total Transactions" value="0" icon={<BarChartIcon />} color="#16a34a" gradient />
+              <StatCard
+                title="Total Transactions"
+                value="0"
+                icon={<BarChartIcon />}
+                color="#16a34a"
+                gradient
+              />
             </Grid>
             <Grid item xs={12} md={3}>
-              <StatCard title="Active Vouchers" value="0" icon={<CreditCardIcon />} color="#1976d2" />
+              <StatCard
+                title="Active Vouchers"
+                value="0"
+                icon={<CreditCardIcon />}
+                color="#1976d2"
+              />
             </Grid>
             <Grid item xs={12} md={3}>
-              <StatCard title="Today's Revenue" value={formatCurrency(0)} icon={<TrendingUpIcon />} color="#a21caf" />
+              <StatCard
+                title="Today's Revenue"
+                value={formatCurrency(0)}
+                icon={<TrendingUpIcon />}
+                color="#a21caf"
+              />
             </Grid>
             <Grid item xs={12} md={3}>
-              <StatCard title="Students Served" value="0" icon={<PeopleIcon />} color="#f59e42" />
+              <StatCard
+                title="Students Served"
+                value="0"
+                icon={<PeopleIcon />}
+                color="#f59e42"
+              />
             </Grid>
           </Grid>
 
@@ -156,7 +241,14 @@ export default function Cafeteria() {
             {/* Voucher Scanner */}
             <Grid item xs={12} lg={8}>
               <Paper sx={{ p: 4, borderRadius: 4, mb: 4 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    mb: 2,
+                  }}
+                >
                   <Avatar sx={{ bgcolor: "#e0f2f1" }}>
                     <SearchIcon sx={{ color: "#1976d2" }} />
                   </Avatar>
@@ -218,17 +310,35 @@ export default function Cafeteria() {
                 )}
 
                 {/* New System Message */}
-                <Paper sx={{ p: 3, mt: 4, background: "#e0f2f1", borderRadius: 2 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Paper
+                  sx={{
+                    p: 3,
+                    mt: 4,
+                    background: "#e0f2f1",
+                    borderRadius: 2,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                    }}
+                  >
                     <Avatar sx={{ bgcolor: "#1976d2" }}>
                       <SettingsIcon />
                     </Avatar>
                     <Box>
-                      <Typography sx={{ fontWeight: 600, color: "#1976d2" }}>
+                      <Typography
+                        sx={{ fontWeight: 600, color: "#1976d2" }}
+                      >
                         Welcome to Your New Cafeteria System!
                       </Typography>
                       <Typography sx={{ color: "#1976d2", fontSize: 14 }}>
-                        This is a fresh installation with no existing data. Once you start allocating vouchers to students and processing transactions, this dashboard will come alive with real-time analytics and insights.
+                        This is a fresh installation with no existing data. Once
+                        you start allocating vouchers to students and processing
+                        transactions, this dashboard will come alive with real-time
+                        analytics and insights.
                       </Typography>
                     </Box>
                   </Box>
@@ -240,7 +350,12 @@ export default function Cafeteria() {
                     <Button
                       fullWidth
                       variant="contained"
-                      sx={{ bgcolor: "#16a34a", color: "#fff", py: 2, borderRadius: 2 }}
+                      sx={{
+                        bgcolor: "#16a34a",
+                        color: "#fff",
+                        py: 2,
+                        borderRadius: 2,
+                      }}
                     >
                       Issue Vouchers
                     </Button>
@@ -249,7 +364,12 @@ export default function Cafeteria() {
                     <Button
                       fullWidth
                       variant="contained"
-                      sx={{ bgcolor: "#a21caf", color: "#fff", py: 2, borderRadius: 2 }}
+                      sx={{
+                        bgcolor: "#a21caf",
+                        color: "#fff",
+                        py: 2,
+                        borderRadius: 2,
+                      }}
                     >
                       View Reports
                     </Button>
@@ -265,7 +385,9 @@ export default function Cafeteria() {
                   System Overview
                 </Typography>
                 <Box sx={{ mb: 4 }}>
-                  <Typography sx={{ fontWeight: 600, mb: 1 }}>Today's Activity</Typography>
+                  <Typography sx={{ fontWeight: 600, mb: 1 }}>
+                    Today's Activity
+                  </Typography>
                   <EmptyState
                     icon={<AccessTimeIcon />}
                     title="No Activity Yet"
@@ -293,7 +415,13 @@ export default function Cafeteria() {
 
           {/* Voucher Status Overview */}
           <Paper sx={{ mt: 6, borderRadius: 4 }}>
-            <Box sx={{ background: "#f8fafc", p: 3, borderBottom: "1px solid #e0e7ef" }}>
+            <Box
+              sx={{
+                background: "#f8fafc",
+                p: 3,
+                borderBottom: "1px solid #e0e7ef",
+              }}
+            >
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
                 Voucher Management
               </Typography>
@@ -305,13 +433,33 @@ export default function Cafeteria() {
               <Grid container spacing={4}>
                 <Grid item xs={12} md={4}>
                   <Box sx={{ textAlign: "center" }}>
-                    <Avatar sx={{ bgcolor: "#e8f5e9", width: 64, height: 64, mx: "auto", mb: 2 }}>
+                    <Avatar
+                      sx={{
+                        bgcolor: "#e8f5e9",
+                        width: 64,
+                        height: 64,
+                        mx: "auto",
+                        mb: 2,
+                      }}
+                    >
                       <CheckCircleIcon sx={{ color: "#16a34a", fontSize: 36 }} />
                     </Avatar>
-                    <Typography sx={{ fontWeight: 600, color: "#16a34a", fontSize: 18 }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        color: "#16a34a",
+                        fontSize: 18,
+                      }}
+                    >
                       Active Vouchers
                     </Typography>
-                    <Typography sx={{ fontWeight: 700, color: "#16a34a", fontSize: 32 }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 700,
+                        color: "#16a34a",
+                        fontSize: 32,
+                      }}
+                    >
                       0
                     </Typography>
                     <Typography sx={{ color: "#666" }}>Ready to be used</Typography>
@@ -319,13 +467,33 @@ export default function Cafeteria() {
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <Box sx={{ textAlign: "center" }}>
-                    <Avatar sx={{ bgcolor: "#e3f2fd", width: 64, height: 64, mx: "auto", mb: 2 }}>
+                    <Avatar
+                      sx={{
+                        bgcolor: "#e3f2fd",
+                        width: 64,
+                        height: 64,
+                        mx: "auto",
+                        mb: 2,
+                      }}
+                    >
                       <CreditCardIcon sx={{ color: "#1976d2", fontSize: 36 }} />
                     </Avatar>
-                    <Typography sx={{ fontWeight: 600, color: "#1976d2", fontSize: 18 }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        color: "#1976d2",
+                        fontSize: 18,
+                      }}
+                    >
                       Used Vouchers
                     </Typography>
-                    <Typography sx={{ fontWeight: 700, color: "#1976d2", fontSize: 32 }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 700,
+                        color: "#1976d2",
+                        fontSize: 32,
+                      }}
+                    >
                       0
                     </Typography>
                     <Typography sx={{ color: "#666" }}>Successfully redeemed</Typography>
@@ -333,13 +501,33 @@ export default function Cafeteria() {
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <Box sx={{ textAlign: "center" }}>
-                    <Avatar sx={{ bgcolor: "#ffebee", width: 64, height: 64, mx: "auto", mb: 2 }}>
+                    <Avatar
+                      sx={{
+                        bgcolor: "#ffebee",
+                        width: 64,
+                        height: 64,
+                        mx: "auto",
+                        mb: 2,
+                      }}
+                    >
                       <CancelIcon sx={{ color: "#f44336", fontSize: 36 }} />
                     </Avatar>
-                    <Typography sx={{ fontWeight: 600, color: "#f44336", fontSize: 18 }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 600,
+                        color: "#f44336",
+                        fontSize: 18,
+                      }}
+                    >
                       Expired Vouchers
                     </Typography>
-                    <Typography sx={{ fontWeight: 700, color: "#f44336", fontSize: 32 }}>
+                    <Typography
+                      sx={{
+                        fontWeight: 700,
+                        color: "#f44336",
+                        fontSize: 32,
+                      }}
+                    >
                       0
                     </Typography>
                     <Typography sx={{ color: "#666" }}>Past expiry date</Typography>
@@ -350,7 +538,15 @@ export default function Cafeteria() {
                 <Typography sx={{ color: "#888", mb: 2 }}>
                   No vouchers have been allocated yet
                 </Typography>
-                <Button variant="contained" sx={{ bgcolor: "#1976d2", px: 4, py: 1.5, borderRadius: 2 }}>
+                <Button
+                  variant="contained"
+                  sx={{
+                    bgcolor: "#1976d2",
+                    px: 4,
+                    py: 1.5,
+                    borderRadius: 2,
+                  }}
+                >
                   Allocate First Vouchers
                 </Button>
               </Box>

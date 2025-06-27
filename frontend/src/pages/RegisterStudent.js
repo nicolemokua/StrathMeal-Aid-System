@@ -13,25 +13,49 @@ export default function RegisterStudent() {
     year_of_study: "",
   });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const currentYear = new Date().getFullYear();
+  const minYear = 2025;
+
+  const validateForm = () => {
+    if (!/^\d{6}$/.test(form.studentId)) return "Student ID must be 6 digits.";
+    if (!form.name.trim()) return "Name is required.";
+    if (!/^[\w-.]+@[\w-]+\.[a-zA-Z]{2,}$/.test(form.email)) return "Invalid email.";
+    if (!/^0[17]\d{8}$/.test(form.phone)) return "Phone must be a valid Kenyan number.";
+    if (!form.course.trim()) return "Course is required.";
+    if (
+      !/^\d{4}$/.test(form.year_of_study) ||
+      parseInt(form.year_of_study) < minYear ||
+      parseInt(form.year_of_study) > currentYear + 10 // allow up to 10 years ahead
+    ) return `Year of study must be a 4-digit year from ${minYear} onwards.`;
+    return "";
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
-    if (!/^\d{6}$/.test(form.studentId)) {
-      setError("Student ID must be 6 digits.");
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       return;
     }
-    // Save to localStorage or send to backend
-    localStorage.setItem("userLoggedIn", "true");
-    localStorage.setItem("userCreated", "true");
-    localStorage.setItem("studentName", form.name);
-    localStorage.setItem("studentEmail", form.email);
-    localStorage.setItem("studentCourse", form.course);
-    localStorage.setItem("studentYear", form.year_of_study);
-    navigate("/home");
+    const uniqueKey = `student_${form.studentId}`;
+    localStorage.setItem(uniqueKey, JSON.stringify({
+      ...form,
+      status: "pending",
+      registration_date: new Date().toISOString(),
+      fee_balance: 0,
+      parent_guardian_unemployed: false,
+      has_siblings: false,
+      has_scholarship: false,
+      referral_letter: false,
+    }));
+    setSuccess(true);
+    setTimeout(() => navigate("/login"), 2000);
   };
 
   return (
@@ -49,8 +73,19 @@ export default function RegisterStudent() {
               <TextField label="Email" name="email" type="email" fullWidth margin="normal" required value={form.email} onChange={handleChange} />
               <TextField label="Phone" name="phone" fullWidth margin="normal" required value={form.phone} onChange={handleChange} />
               <TextField label="Course" name="course" fullWidth margin="normal" required value={form.course} onChange={handleChange} />
-              <TextField label="Year of Study" name="year_of_study" type="number" fullWidth margin="normal" required value={form.year_of_study} onChange={handleChange} />
+              <TextField
+                label="Year of Study"
+                name="year_of_study"
+                type="number"
+                fullWidth
+                margin="normal"
+                required
+                value={form.year_of_study}
+                onChange={handleChange}
+                inputProps={{ min: minYear, max: currentYear + 10 }}
+              />
               {error && <Typography color="error" sx={{ mt: 1 }}>{error}</Typography>}
+              {success && <Typography color="success.main" sx={{ mt: 1 }}>Registration submitted for verification!</Typography>}
               <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2, py: 1.5, borderRadius: 2 }}>
                 Register
               </Button>

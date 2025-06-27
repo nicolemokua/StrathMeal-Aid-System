@@ -27,21 +27,39 @@ export default function Donor() {
     name: donorName,
     phone: localStorage.getItem("donorPhone") || "",
     email: localStorage.getItem("donorEmail") || "",
+    age: "",
   });
   const [showSuccess, setShowSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   const handleDonation = (e) => {
     e.preventDefault();
-    if (donationAmount && donorInfo.name && donorInfo.phone) {
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-        setDonationAmount("");
-      }, 3000);
-    }
-  };
+    setError("");
+    const age = parseInt(donorInfo.age, 10);
+    const amount = parseInt(donationAmount, 10);
 
-  const quickAmounts = [500, 1000, 2500, 5000];
+    if (!age || age < 18) {
+      setError("You must be at least 18 years old to donate.");
+      return;
+    }
+    if (isNaN(amount) || amount < (age <= 30 ? 50 : 150)) {
+      setError(
+        age <= 30
+          ? "Minimum donation for ages 18-30 is Kshs. 50."
+          : "Minimum donation for ages 31+ is Kshs. 150."
+      );
+      return;
+    }
+    if (!donorInfo.name || !donorInfo.phone) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+      setDonationAmount("");
+    }, 3000);
+  };
 
   const stats = [
     { icon: <PeopleIcon color="primary" />, label: "Students Helped", value: "0" },
@@ -93,9 +111,7 @@ export default function Donor() {
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, display: "flex", alignItems: "center", gap: 1 }}>
                   <FavoriteIcon sx={{ color: "#e11d48" }} /> Make a Donation
                 </Typography>
-                <Typography sx={{ color: "#666", mb: 2 }}>
-                  Every KSh 300 provides one meal voucher to a student
-                </Typography>
+                {/* Removed voucher breakdown and suggested donations */}
                 {showSuccess && (
                   <Alert icon={<CheckCircleIcon fontSize="inherit" />} severity="success" sx={{ mb: 2 }}>
                     Thank you! Your donation has been processed successfully.
@@ -134,36 +150,33 @@ export default function Donor() {
                           InputProps={{ startAdornment: <EmailIcon sx={{ mr: 1 }} /> }}
                         />
                       </Grid>
+                      <Grid item xs={12} md={4}>
+                        <TextField
+                          label="Age"
+                          type="number"
+                          value={donorInfo.age}
+                          onChange={(e) => setDonorInfo({ ...donorInfo, age: e.target.value })}
+                          fullWidth
+                          required
+                        />
+                      </Grid>
                     </Grid>
                   </Box>
                   <Box sx={{ mb: 3 }}>
                     <Typography sx={{ fontWeight: 600, mb: 1 }}>Donation Amount</Typography>
-                    <Grid container spacing={2} mb={1}>
-                      {quickAmounts.map((amount) => (
-                        <Grid item xs={6} md={3} key={amount}>
-                          <Button
-                            variant={donationAmount === amount.toString() ? "contained" : "outlined"}
-                            color="primary"
-                            fullWidth
-                            onClick={() => setDonationAmount(amount.toString())}
-                          >
-                            KSh {amount.toLocaleString()}
-                          </Button>
-                        </Grid>
-                      ))}
-                    </Grid>
                     <TextField
-                      label="Custom Amount (KSh)"
+                      label="Amount (KSh)"
                       type="number"
                       value={donationAmount}
                       onChange={(e) => setDonationAmount(e.target.value)}
                       fullWidth
                       required
                       sx={{ mt: 1 }}
+                      inputProps={{ min: 1 }}
                     />
-                    {donationAmount && (
-                      <Typography sx={{ mt: 1, color: "#1976d2", fontSize: 14 }}>
-                        This will fund approximately <b>{Math.floor(parseInt(donationAmount) / 300)}</b> meal vouchers
+                    {error && (
+                      <Typography color="error" sx={{ mt: 1 }}>
+                        {error}
                       </Typography>
                     )}
                   </Box>
@@ -183,6 +196,8 @@ export default function Donor() {
             {/* Sidebar */}
             <Grid item xs={12} lg={4}>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                {/* REMOVE the "Your Impact" section below */}
+                {/* 
                 <Paper sx={{ p: 3, borderRadius: 3, background: "linear-gradient(135deg, #f0fdf4 0%, #bbf7d0 100%)" }}>
                   <Typography sx={{ fontWeight: 700, color: "#16a34a", mb: 1 }}>Your Impact</Typography>
                   <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
@@ -198,6 +213,7 @@ export default function Donor() {
                     <Typography>= 1 month of meals</Typography>
                   </Box>
                 </Paper>
+                */}
                 <Paper sx={{ p: 3, borderRadius: 3 }}>
                   <Typography sx={{ fontWeight: 700, mb: 2 }}>How It Works</Typography>
                   <Box sx={{ mb: 1, display: "flex", alignItems: "center", gap: 1 }}>

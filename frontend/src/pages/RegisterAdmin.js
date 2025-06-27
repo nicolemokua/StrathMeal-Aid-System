@@ -22,7 +22,9 @@ export default function RegisterAdmin() {
       setError("Admin ID must be 6 digits.");
       return;
     }
-    // Save to localStorage or send to backend
+    // Save to unique key in localStorage
+    const uniqueKey = `admin_${form.adminId}`;
+    localStorage.setItem(uniqueKey, JSON.stringify(form));
     localStorage.setItem("userLoggedIn", "true");
     localStorage.setItem("userCreated", "true");
     localStorage.setItem("adminName", form.name);

@@ -44,6 +44,20 @@ function Login() {
       return;
     }
 
+    // Check student status
+    const apps = JSON.parse(localStorage.getItem("pendingApplications") || "[]");
+    const student = apps.find(app => app.email === form.email);
+    if (student) {
+      if (student.status === "pending") {
+        setError("Your registration is pending admin approval.");
+        return;
+      }
+      if (student.status === "rejected") {
+        setError("Your registration was rejected. Please contact support.");
+        return;
+      }
+    }
+
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);

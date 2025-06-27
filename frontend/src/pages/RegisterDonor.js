@@ -22,11 +22,16 @@ export default function RegisterDonor() {
       setError("Donor ID must be 6 digits.");
       return;
     }
-    // Save to localStorage or send to backend
+    // Save to "donors" in localStorage
+    const donors = JSON.parse(localStorage.getItem("donors") || "[]");
+    donors.push({ ...form });
+    localStorage.setItem("donors", JSON.stringify(donors));
     localStorage.setItem("userLoggedIn", "true");
     localStorage.setItem("userCreated", "true");
     localStorage.setItem("donorName", form.name);
     localStorage.setItem("donorEmail", form.email);
+    const uniqueKey = `donor_${form.donorId}`;
+    localStorage.setItem(uniqueKey, JSON.stringify(form));
     navigate("/home");
   };
 

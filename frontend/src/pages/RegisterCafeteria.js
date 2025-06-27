@@ -21,7 +21,9 @@ export default function RegisterCafeteria() {
       setError("Cafeteria ID must be 6 digits.");
       return;
     }
-    // Save to localStorage or send to backend
+    // Save to unique key in localStorage
+    const uniqueKey = `cafeteria_${form.cafeteriaId}`;
+    localStorage.setItem(uniqueKey, JSON.stringify(form));
     localStorage.setItem("userLoggedIn", "true");
     localStorage.setItem("userCreated", "true");
     localStorage.setItem("cafeteriaName", form.name);

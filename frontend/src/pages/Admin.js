@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Restored useEffect import
 import Navbar from "../components/Navbar";
 import { Box, Typography, Paper, Grid, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Avatar } from "@mui/material";
 import PeopleIcon from "@mui/icons-material/People";
@@ -9,6 +9,8 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+
+const MIN_MEAL_KITTY = 10000; // Set to your desired minimum value
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -28,6 +30,55 @@ export default function Admin() {
     availableFunds: 0,
     lastUpdated: new Date().toISOString(),
   });
+
+  const [slaReminders, setSlaReminders] = useState([]);
+
+  useEffect(() => {
+    // Get all student keys
+    const studentKeys = Object.keys(localStorage).filter(k => k.startsWith("student_"));
+    const pending = studentKeys
+      .map(k => JSON.parse(localStorage.getItem(k)))
+      .filter(app => app.status === "pending" && app.registration_date);
+
+    // Calculate business days since registration
+    const today = new Date();
+    const remindersArr = pending.map(app => {
+      const regDate = new Date(app.registration_date);
+      let days = 0, d = new Date(regDate);
+      while (d <= today) {
+        // 0 = Sunday, 6 = Saturday
+        if (d.getDay() !== 0 && d.getDay() !== 6) days++;
+        d.setDate(d.getDate() + 1);
+      }
+      return {
+        ...app,
+        businessDays: days,
+        needsReminder: days >= 5 && days <= 7
+      };
+    });
+    setSlaReminders(remindersArr.filter(r => r.needsReminder));
+  }, [/* dependencies: update this if you have actions that approve/reject students */]);
+
+  useEffect(() => {
+    if (mealKitty.totalFunds < MIN_MEAL_KITTY) {
+      // Show warning in UI or send alert
+      // alert("Meal kitty is below minimum required funds!");
+    }
+    const percentUsed = 1 - mealKitty.availableFunds / mealKitty.totalFunds;
+    if (percentUsed >= 0.8 && percentUsed < 0.9) {
+      // 80% depletion: create emergency backup funds
+      // showEmergencyFundsUI();
+    }
+    if (percentUsed >= 0.8) {
+      // send alert at 80%
+    }
+    if (percentUsed >= 0.9) {
+      // send alert at 90%
+    }
+    if (percentUsed >= 0.95) {
+      // send alert at 95%
+    }
+  }, [mealKitty]);
 
   const formatCurrency = (amount) => `Shs. ${amount.toLocaleString()}`;
 
@@ -207,6 +258,20 @@ export default function Admin() {
               <Typography sx={{ color: "#666", mb: 2 }}>
                 Review and approve student applications
               </Typography>
+              {slaReminders.length > 0 && (
+                <Paper sx={{ p: 2, mb: 2, background: "#fffbe6", border: "1px solid #ffe082" }}>
+                  <Typography sx={{ color: "#b45309", fontWeight: 700 }}>
+                    Reminder: {slaReminders.length} student application(s) are approaching the 7 business day SLA for verification!
+                  </Typography>
+                  <ul>
+                    {slaReminders.map(r => (
+                      <li key={r.studentId || r.email}>
+                        {r.name} (ID: {r.studentId}) - Registered {r.businessDays} business days ago
+                      </li>
+                    ))}
+                  </ul>
+                </Paper>
+              )}
               <EmptyState
                 icon={<PeopleIcon />}
                 title="No Student Applications Yet"
