@@ -117,14 +117,6 @@ function Login() {
               <Box sx={{ position: "absolute", bottom: 30, right: 30, width: 100, height: 100, bgcolor: "white", opacity: 0.08, borderRadius: "50%", filter: "blur(12px)" }} />
 
               <Box sx={{ mb: 4, zIndex: 1, textAlign: "center" }}>
-                {/* Insert Strathmore University logo here */}
-                <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-                  <img
-                    src="/Strathmore-logo.png"
-                    alt="Strathmore University Logo"
-                    style={{ height: 100, objectFit: "contain" }} // Increased from 60 to 100
-                  />
-                </Box>
                 <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
                   Strath Meal Aid
                 </Typography>

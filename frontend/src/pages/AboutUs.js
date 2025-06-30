@@ -40,11 +40,6 @@ export default function AboutUs() {
             }} />
 
             <Box sx={{ position: "relative", zIndex: 1 }}>
-              <img
-                src="/strathmore-logo.png"
-                alt="Strathmore University Logo"
-                style={{ height: 90, marginBottom: 24 }}
-              />
               <Typography
                 variant="h3"
                 sx={{

@@ -18,7 +18,7 @@ function Navbar() {
     <AppBar
       position="static"
       sx={{
-        background: "linear-gradient(90deg, #fef9c3 0%, #fde68a 100%)", // Light yellow gradient
+        background: "linear-gradient(135deg, #e0e7ef 0%, #e0f2f1 100%)", // Match main page background
         boxShadow: "0 4px 24px rgba(19,78,74,0.08)",
       }}
     >

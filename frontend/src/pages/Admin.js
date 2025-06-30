@@ -137,7 +137,7 @@ export default function Admin() {
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
                 Admin Dashboard
               </Typography>
-              <Typography sx={{ color: "#1976d2" }}>EduMeal - Digital Meal Voucher System</Typography>
+              
             </Box>
             <Box sx={{ display: "flex", gap: 2 }}>
               <Button
@@ -192,11 +192,9 @@ export default function Admin() {
             <Box>
               <Paper sx={{ p: 4, mb: 3, borderRadius: 3, background: "linear-gradient(90deg, #134e4a 0%, #2dd4bf 100%)", color: "#fff" }}>
                 <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                  Welcome to EduMeal Admin
+                  Welcome 
                 </Typography>
-                <Typography>
-                  Manage your digital meal voucher system efficiently. Start by setting up your system parameters and adding funds to the meal kitty.
-                </Typography>
+                
               </Paper>
               <Grid container spacing={3} mb={3}>
                 <Grid item xs={12} md={3}>
