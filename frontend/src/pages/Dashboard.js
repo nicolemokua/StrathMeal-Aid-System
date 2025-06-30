@@ -74,12 +74,9 @@ export default function Dashboard() {
             }}
           >
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-              Welcome to StrathMeal Aid, {profile.name}!
+              Welcome , {profile.name}!
             </Typography>
-            <Typography>
-              Your digital meal voucher system. Your profile is ready and under
-              review.
-            </Typography>
+            
           </Paper>
 
           {/* Profile Summary */}
