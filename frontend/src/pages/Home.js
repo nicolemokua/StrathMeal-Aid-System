@@ -63,7 +63,18 @@ export default function Home() {
           }}
         />
         <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
-          <Grid container spacing={4} alignItems="center">
+          <Grid
+            container
+            spacing={4}
+            alignItems="center"
+            sx={{
+              animation: "fadeIn 1.2s",
+              "@keyframes fadeIn": {
+                from: { opacity: 0, transform: "translateY(40px)" },
+                to: { opacity: 1, transform: "translateY(0)" },
+              },
+            }}
+          >
             <Grid item xs={12} md={6}>
               <Typography
                 variant="h2"
@@ -72,6 +83,12 @@ export default function Home() {
                   mb: 3,
                   color: "#134e4a",
                   fontSize: { xs: "2rem", md: "3rem" },
+                  textShadow: "0 2px 12px rgba(19,78,74,0.08)",
+                  animation: "fadeInLeft 1.5s",
+                  "@keyframes fadeInLeft": {
+                    from: { opacity: 0, transform: "translateX(-40px)" },
+                    to: { opacity: 1, transform: "translateX(0)" },
+                  },
                 }}
               >
                 Nourishing Dreams at Strathmore
@@ -83,6 +100,11 @@ export default function Home() {
                   color: "#475569",
                   fontWeight: 400,
                   lineHeight: 1.6,
+                  animation: "fadeInLeft 1.8s",
+                  "@keyframes fadeInLeft": {
+                    from: { opacity: 0, transform: "translateX(-40px)" },
+                    to: { opacity: 1, transform: "translateX(0)" },
+                  },
                 }}
               >
                 StrathMeal Aid connects university students with nutritious meals
@@ -92,19 +114,41 @@ export default function Home() {
             </Grid>
             <Grid item xs={12} md={6} sx={{ textAlign: "center" }}>
               <Paper
-                elevation={3}
+                elevation={6}
                 sx={{
                   p: 4,
                   borderRadius: 3,
                   bgcolor: "white",
-                  maxWidth: 300,
+                  maxWidth: 320,
                   mx: "auto",
                   boxShadow: "0 8px 32px rgba(19,78,74,0.13)",
-                  transition: "transform 0.3s",
-                  "&:hover": { transform: "scale(1.04)" },
+                  border: "3px solid",
+                  borderImage: "linear-gradient(90deg, #2dd4bf 0%, #1976d2 100%) 1",
+                  transition: "transform 0.3s, box-shadow 0.3s",
+                  "&:hover": {
+                    transform: "scale(1.05)",
+                    boxShadow: "0 12px 36px rgba(19,78,74,0.18)",
+                  },
+                  animation: "fadeInUp 1.5s",
+                  "@keyframes fadeInUp": {
+                    from: { opacity: 0, transform: "translateY(40px)" },
+                    to: { opacity: 1, transform: "translateY(0)" },
+                  },
                 }}
               >
-                <FavoriteIcon sx={{ fontSize: 60, color: "#2dd4bf", mb: 2, animation: "pulse 2s infinite" }} />
+                <FavoriteIcon
+                  sx={{
+                    fontSize: 60,
+                    color: "#2dd4bf",
+                    mb: 2,
+                    animation: "pulse 2s infinite",
+                    "@keyframes pulse": {
+                      "0%": { transform: "scale(1)" },
+                      "50%": { transform: "scale(1.12)" },
+                      "100%": { transform: "scale(1)" },
+                    },
+                  }}
+                />
                 <Typography variant="h5" sx={{ fontWeight: 600, mb: 1, color: "#134e4a" }}>
                   Meal Support
                 </Typography>
@@ -118,7 +162,17 @@ export default function Home() {
       </Box>
 
       {/* Features Section */}
-      <Box sx={{ py: 8, bgcolor: "#f8fafc" }}>
+      <Box
+        sx={{
+          py: 8,
+          bgcolor: "#f8fafc",
+          animation: "fadeIn 1.5s",
+          "@keyframes fadeIn": {
+            from: { opacity: 0, transform: "translateY(40px)" },
+            to: { opacity: 1, transform: "translateY(0)" },
+          },
+        }}
+      >
         <Container maxWidth="lg">
           <Typography
             variant="h4"
@@ -127,6 +181,7 @@ export default function Home() {
               fontWeight: 700,
               mb: 6,
               color: "#134e4a",
+              textShadow: "0 2px 12px rgba(19,78,74,0.08)",
             }}
           >
             How We Support Students
@@ -145,7 +200,15 @@ export default function Home() {
                   "&:hover": { transform: "translateY(-8px) scale(1.03)" },
                 }}
               >
-                <AccessTimeIcon sx={{ fontSize: 50, color: "#2dd4bf", mb: 2 }} />
+                <AccessTimeIcon
+                  sx={{
+                    fontSize: 50,
+                    color: "#2dd4bf",
+                    mb: 2,
+                    transition: "transform 0.3s",
+                    "&:hover": { transform: "scale(1.15)" },
+                  }}
+                />
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                   Quick Access
                 </Typography>
@@ -167,7 +230,15 @@ export default function Home() {
                   "&:hover": { transform: "translateY(-8px) scale(1.03)" },
                 }}
               >
-                <GroupIcon sx={{ fontSize: 50, color: "#1976d2", mb: 2 }} />
+                <GroupIcon
+                  sx={{
+                    fontSize: 50,
+                    color: "#1976d2",
+                    mb: 2,
+                    transition: "transform 0.3s",
+                    "&:hover": { transform: "scale(1.15)" },
+                  }}
+                />
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                   Community Support
                 </Typography>
@@ -189,7 +260,15 @@ export default function Home() {
                   "&:hover": { transform: "translateY(-8px) scale(1.03)" },
                 }}
               >
-                <ShieldIcon sx={{ fontSize: 50, color: "#f59e0b", mb: 2 }} />
+                <ShieldIcon
+                  sx={{
+                    fontSize: 50,
+                    color: "#f59e0b",
+                    mb: 2,
+                    transition: "transform 0.3s",
+                    "&:hover": { transform: "scale(1.15)" },
+                  }}
+                />
                 <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                   Safe & Private
                 </Typography>
@@ -203,18 +282,47 @@ export default function Home() {
       </Box>
 
       {/* About Section */}
-      <Box sx={{ py: 8, bgcolor: "white" }}>
+      <Box
+        sx={{
+          py: 8,
+          bgcolor: "white",
+          animation: "fadeIn 2s",
+          "@keyframes fadeIn": {
+            from: { opacity: 0, transform: "translateY(40px)" },
+            to: { opacity: 1, transform: "translateY(0)" },
+          },
+        }}
+      >
         <Container maxWidth="lg">
           <Grid container spacing={6} alignItems="center">
-            {/* Removed the image here */}
             <Grid item xs={12} md={12}>
               <Typography
                 variant="h4"
-                sx={{ fontWeight: 700, mb: 3, color: "#134e4a", textAlign: "center" }}
+                sx={{
+                  fontWeight: 700,
+                  mb: 3,
+                  color: "#134e4a",
+                  textAlign: "center",
+                  textShadow: "0 2px 12px rgba(19,78,74,0.08)",
+                }}
               >
                 Focus on What Matters
               </Typography>
-              <Typography variant="body1" sx={{ mb: 3, color: "#475569", lineHeight: 1.7, textAlign: "center" }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  mb: 3,
+                  color: "#475569",
+                  lineHeight: 1.7,
+                  textAlign: "center",
+                  fontSize: "1.15rem",
+                  animation: "fadeIn 2.2s",
+                  "@keyframes fadeIn": {
+                    from: { opacity: 0, transform: "translateY(40px)" },
+                    to: { opacity: 1, transform: "translateY(0)" },
+                  },
+                }}
+              >
                 When you don't have to worry about your next meal, you can focus
                 entirely on your education, building relationships, and achieving
                 your academic goals.
@@ -231,6 +339,13 @@ export default function Home() {
           bgcolor: "#134e4a",
           color: "white",
           textAlign: "center",
+          boxShadow: "0 8px 32px rgba(19,78,74,0.13)",
+          background: "linear-gradient(90deg, #134e4a 0%, #2dd4bf 100%)",
+          animation: "fadeInUp 2.2s",
+          "@keyframes fadeInUp": {
+            from: { opacity: 0, transform: "translateY(40px)" },
+            to: { opacity: 1, transform: "translateY(0)" },
+          },
         }}
       >
         <Container maxWidth="md">
