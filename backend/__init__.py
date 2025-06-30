@@ -6,9 +6,10 @@ db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object('backend.config.Config')  # <-- Fix this line
+    app.config.from_object('backend.config.Config')
     db.init_app(app)
     CORS(app)
     from backend import routes
     app.register_blueprint(routes.bp)
     return app
+
