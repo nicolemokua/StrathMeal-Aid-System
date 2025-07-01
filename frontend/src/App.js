@@ -19,7 +19,7 @@ import CafeteriaDashboard from "./components/CafeteriaDashboard";
 import DonorDashboard from "./components/DonorDashboard";
 import Logout from "./pages/Logout";
 import ForgotPassword from "./pages/ForgotPassword";
-import Support from "./pages/Support";
+import Support from "./pages/support";
 import AboutUs from "./pages/AboutUs";
 import Student from "./pages/Student";
 import Admin from "./pages/Admin";

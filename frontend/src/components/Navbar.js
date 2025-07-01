@@ -36,11 +36,11 @@ function Navbar() {
               textShadow: "0 2px 12px rgba(30,41,59,0.08)",
             }}
           >
-            StrathMeal Aid System
+            
           </Typography>
         </Box>
         <Button color="inherit" component={Link} to="/home" sx={{ color: "#111", fontWeight: 700 }}>
-          Home
+          
         </Button>
         {isLoggedIn && (
           <>
