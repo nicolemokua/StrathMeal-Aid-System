@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function RegisterAdmin() {
   const [form, setForm] = useState({
-    adminId: "",
     name: "",
     email: "",
     phone: "",
@@ -15,21 +14,24 @@ export default function RegisterAdmin() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const generateAdminId = () => {
+    return 'A' + Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
-    if (!/^\d{6}$/.test(form.adminId)) {
-      setError("Admin ID must be 6 digits.");
-      return;
-    }
+    // Auto-generate adminId
+    const adminId = generateAdminId();
     // Save to unique key in localStorage
-    const uniqueKey = `admin_${form.adminId}`;
-    localStorage.setItem(uniqueKey, JSON.stringify(form));
+    const uniqueKey = `admin_${adminId}`;
+    localStorage.setItem(uniqueKey, JSON.stringify({ ...form, adminId }));
     localStorage.setItem("userLoggedIn", "true");
     localStorage.setItem("userCreated", "true");
     localStorage.setItem("adminName", form.name);
     localStorage.setItem("adminEmail", form.email);
-    navigate("/home");
+    localStorage.setItem("userType", "admin");
+    navigate("/admin");
   };
 
   return (
@@ -42,7 +44,6 @@ export default function RegisterAdmin() {
               Admin Registration
             </Typography>
             <form onSubmit={handleSubmit}>
-              <TextField label="Admin ID" name="adminId" fullWidth margin="normal" required value={form.adminId} onChange={handleChange} inputProps={{ maxLength: 6 }} />
               <TextField label="Name" name="name" fullWidth margin="normal" required value={form.name} onChange={handleChange} />
               <TextField label="Email" name="email" type="email" fullWidth margin="normal" required value={form.email} onChange={handleChange} />
               <TextField label="Phone" name="phone" fullWidth margin="normal" required value={form.phone} onChange={handleChange} />

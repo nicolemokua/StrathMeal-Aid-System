@@ -6,6 +6,9 @@ import GroupIcon from "@mui/icons-material/Group";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import ShieldIcon from "@mui/icons-material/Shield";
 
+// Home.js is no longer necessary for user navigation, as users are redirected to their dashboards after login/registration.
+// You may safely remove or ignore this file unless you want a public landing page for non-logged-in users.
+
 export default function Home() {
   return (
     <>

@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function RegisterStudent() {
   const [form, setForm] = useState({
-    studentId: "",
     name: "",
     email: "",
     phone: "",
@@ -13,7 +12,6 @@ export default function RegisterStudent() {
     year_of_study: "",
   });
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -22,7 +20,6 @@ export default function RegisterStudent() {
   const minYear = 2025;
 
   const validateForm = () => {
-    if (!/^\d{6}$/.test(form.studentId)) return "Student ID must be 6 digits.";
     if (!form.name.trim()) return "Name is required.";
     if (!/^[\w-.]+@[\w-]+\.[a-zA-Z]{2,}$/.test(form.email)) return "Invalid email.";
     if (!/^0[17]\d{8}$/.test(form.phone)) return "Phone must be a valid Kenyan number.";
@@ -35,6 +32,10 @@ export default function RegisterStudent() {
     return "";
   };
 
+  const generateStudentId = () => {
+    return 'S' + Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
@@ -43,9 +44,12 @@ export default function RegisterStudent() {
       setError(validationError);
       return;
     }
-    const uniqueKey = `student_${form.studentId}`;
+    // Auto-generate studentId
+    const studentId = generateStudentId();
+    const uniqueKey = `student_${studentId}`;
     localStorage.setItem(uniqueKey, JSON.stringify({
       ...form,
+      studentId,
       status: "pending",
       registration_date: new Date().toISOString(),
       fee_balance: 0,
@@ -54,8 +58,11 @@ export default function RegisterStudent() {
       has_scholarship: false,
       referral_letter: false,
     }));
-    setSuccess(true);
-    setTimeout(() => navigate("/login"), 2000);
+    localStorage.setItem("userLoggedIn", "true");
+    localStorage.setItem("userCreated", "true");
+    localStorage.setItem("studentName", form.name);
+    localStorage.setItem("userType", "student");
+    navigate("/student");
   };
 
   return (
@@ -68,7 +75,6 @@ export default function RegisterStudent() {
               Student Registration
             </Typography>
             <form onSubmit={handleSubmit}>
-              <TextField label="Student ID" name="studentId" fullWidth margin="normal" required value={form.studentId} onChange={handleChange} inputProps={{ maxLength: 6 }} />
               <TextField label="Name" name="name" fullWidth margin="normal" required value={form.name} onChange={handleChange} />
               <TextField label="Email" name="email" type="email" fullWidth margin="normal" required value={form.email} onChange={handleChange} />
               <TextField label="Phone" name="phone" fullWidth margin="normal" required value={form.phone} onChange={handleChange} />
@@ -85,7 +91,6 @@ export default function RegisterStudent() {
                 inputProps={{ min: minYear, max: currentYear + 10 }}
               />
               {error && <Typography color="error" sx={{ mt: 1 }}>{error}</Typography>}
-              {success && <Typography color="success.main" sx={{ mt: 1 }}>Registration submitted for verification!</Typography>}
               <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2, py: 1.5, borderRadius: 2 }}>
                 Register
               </Button>

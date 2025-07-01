@@ -126,6 +126,24 @@ export default function Admin() {
     setShowKittyModal(false);
   };
 
+  // Only render the admin dashboard if the user is an admin
+  const userRole = localStorage.getItem("userRole"); // Assuming user role is stored in localStorage
+  if (userRole !== "admin") {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+          Access Denied
+        </Typography>
+        <Typography sx={{ color: "#666", mb: 4 }}>
+          You do not have permission to access this page. Please contact your administrator.
+        </Typography>
+        <Button variant="contained" onClick={() => window.location.href = "/"}>
+          Go to Home
+        </Button>
+      </Box>
+    );
+  }
+
   return (
     <>
       <Navbar />

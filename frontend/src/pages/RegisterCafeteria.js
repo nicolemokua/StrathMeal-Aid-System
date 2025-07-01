@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function RegisterCafeteria() {
   const [form, setForm] = useState({
-    cafeteriaId: "",
     name: "",
     location: "",
   });
@@ -14,21 +13,24 @@ export default function RegisterCafeteria() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const generateCafeteriaId = () => {
+    return 'C' + Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
-    if (!/^\d{6}$/.test(form.cafeteriaId)) {
-      setError("Cafeteria ID must be 6 digits.");
-      return;
-    }
+    // Auto-generate cafeteriaId
+    const cafeteriaId = generateCafeteriaId();
     // Save to unique key in localStorage
-    const uniqueKey = `cafeteria_${form.cafeteriaId}`;
-    localStorage.setItem(uniqueKey, JSON.stringify(form));
+    const uniqueKey = `cafeteria_${cafeteriaId}`;
+    localStorage.setItem(uniqueKey, JSON.stringify({ ...form, cafeteriaId }));
     localStorage.setItem("userLoggedIn", "true");
     localStorage.setItem("userCreated", "true");
     localStorage.setItem("cafeteriaName", form.name);
     localStorage.setItem("cafeteriaLocation", form.location);
-    navigate("/home");
+    localStorage.setItem("userType", "cafeteria");
+    navigate("/cafeteria");
   };
 
   return (
@@ -41,7 +43,6 @@ export default function RegisterCafeteria() {
               Cafeteria Registration
             </Typography>
             <form onSubmit={handleSubmit}>
-              <TextField label="Cafeteria ID" name="cafeteriaId" fullWidth margin="normal" required value={form.cafeteriaId} onChange={handleChange} inputProps={{ maxLength: 6 }} />
               <TextField label="Cafeteria Name" name="name" fullWidth margin="normal" required value={form.name} onChange={handleChange} />
               <TextField label="Location" name="location" fullWidth margin="normal" required value={form.location} onChange={handleChange} />
               {error && <Typography color="error" sx={{ mt: 1 }}>{error}</Typography>}

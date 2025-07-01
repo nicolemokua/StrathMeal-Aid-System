@@ -120,6 +120,40 @@ export default function Cafeteria() {
     });
   };
 
+  // Only render the cafeteria dashboard if the user is a cafeteria
+  if (cafeterias.length === 0) {
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          background:
+            "linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%)",
+          py: 4,
+        }}
+      >
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
+          Access Denied
+        </Typography>
+        <Typography sx={{ color: "#666", mb: 4, textAlign: "center" }}>
+          This dashboard is restricted to registered cafeterias only. If you are
+          a cafeteria owner, please register your cafeteria to access this
+          dashboard.
+        </Typography>
+        <Button
+          variant="contained"
+          sx={{ bgcolor: "#1976d2", px: 4, py: 1.5, borderRadius: 2 }}
+          onClick={() => window.location.href = '/register'}
+        >
+          Register Cafeteria
+        </Button>
+      </Box>
+    );
+  }
+
   return (
     <>
       <Navbar />

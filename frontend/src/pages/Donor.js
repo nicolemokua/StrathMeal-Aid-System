@@ -67,6 +67,17 @@ export default function Donor() {
     { icon: <FavoriteIcon sx={{ color: "#e11d48" }} />, label: "Meals Funded", value: "0" },
   ];
 
+  // Only render the donor dashboard if the user is a donor
+  if (!localStorage.getItem("donorToken")) {
+    return (
+      <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
+        <Typography variant="h6" sx={{ color: "#333", textAlign: "center" }}>
+          Access denied. This page is for donors only.
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <>
       <Navbar />

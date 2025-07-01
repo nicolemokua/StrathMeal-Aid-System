@@ -7,16 +7,6 @@ import LockIcon from "@mui/icons-material/Lock";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
-function validatePassword(password) {
-  // At most one symbol (non-alphanumeric), at least 3 numbers, max 20 chars
-  const symbolMatch = password.match(/[^a-zA-Z0-9]/g);
-  const numMatch = password.match(/[0-9]/g);
-  if (password.length > 20) return false;
-  if (symbolMatch && symbolMatch.length > 1) return false;
-  if (!numMatch || numMatch.length < 3) return false;
-  return true;
-}
-
 function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -24,49 +14,42 @@ function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Check if user has already created an account
-  const hasAccount = !!localStorage.getItem("userCreated");
-
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  // After successful login, redirect to the correct dashboard based on user type
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    // Email validation
-    if (form.email.length > 200) {
-      setError("Email must not exceed 200 characters.");
-      return;
-    }
-    // Password validation
-    if (!validatePassword(form.password)) {
-      setError("Invalid. Password must include at least 3 numbers and at most a symbol.");
-      return;
-    }
-
-    // Check student status
-    const apps = JSON.parse(localStorage.getItem("pendingApplications") || "[]");
-    const student = apps.find(app => app.email === form.email);
-    if (student) {
-      if (student.status === "pending") {
-        setError("Your registration is pending admin approval.");
-        return;
-      }
-      if (student.status === "rejected") {
-        setError("Your registration was rejected. Please contact support.");
-        return;
-      }
-    }
-
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      // Simulate login success
+    try {
+      const res = await fetch("http://localhost:5000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Login failed");
+        setIsLoading(false);
+        return;
+      }
       localStorage.setItem("userLoggedIn", "true");
-      // Mark that user has created an account
-      localStorage.setItem("userCreated", "true");
-      navigate("/home");
-    }, 1200);
+      // Determine user type and redirect accordingly
+      if (data.userType === "student") {
+        navigate("/student");
+      } else if (data.userType === "admin") {
+        navigate("/admin");
+      } else if (data.userType === "donor") {
+        navigate("/donor");
+      } else if (data.userType === "cafeteria") {
+        navigate("/cafeteria");
+      } else {
+        navigate("/notfound");
+      }
+    } catch (err) {
+      setError("Network error");
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -131,10 +114,10 @@ function Login() {
               <Box sx={{ width: "100%", maxWidth: 400, mx: "auto" }}>
                 <Box sx={{ textAlign: "center", mb: 4 }}>
                   <Typography variant="h5" sx={{ fontWeight: 700, mb: 1, color: "#222" }}>
-                    {hasAccount ? "Welcome Back" : "Welcome"}
+                    Welcome Back
                   </Typography>
                   <Typography sx={{ color: "#666" }}>
-                    Log in to access your meal assistance account
+                    Log in to access your account
                   </Typography>
                 </Box>
                 <form onSubmit={handleSubmit}>
@@ -180,12 +163,6 @@ function Login() {
                       }}
                       inputProps={{ maxLength: 20 }}
                     />
-                  </Box>
-                  {/* Forgot password link directly below password field */}
-                  <Box sx={{ mb: 2, textAlign: "right" }}>
-                    <MuiLink component={Link} to="/forgot-password" sx={{ fontSize: 14, color: "#1976d2" }}>
-                      Forgot password?
-                    </MuiLink>
                   </Box>
                   {error && (
                     <Typography color="error" sx={{ mb: 2, fontSize: 15 }}>

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 function Navbar() {
   const isLoggedIn = !!localStorage.getItem("userLoggedIn");
+  const userType = localStorage.getItem("userType"); // Assuming userType is stored in localStorage
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleDashboardMenu = (event) => {
@@ -62,18 +63,26 @@ function Navbar() {
                 "aria-labelledby": "dashboard-button",
               }}
             >
-              <MenuItem component={Link} to="/dashboard/student" onClick={handleDashboardClose}>
-                Student
-              </MenuItem>
-              <MenuItem component={Link} to="/dashboard/admin" onClick={handleDashboardClose}>
-                Admin
-              </MenuItem>
-              <MenuItem component={Link} to="/dashboard/cafeteria" onClick={handleDashboardClose}>
-                Cafeteria
-              </MenuItem>
-              <MenuItem component={Link} to="/dashboard/donor" onClick={handleDashboardClose}>
-                Donor
-              </MenuItem>
+              {userType === "student" && (
+                <MenuItem component={Link} to="/dashboard/student" onClick={handleDashboardClose}>
+                  Student
+                </MenuItem>
+              )}
+              {userType === "admin" && (
+                <MenuItem component={Link} to="/dashboard/admin" onClick={handleDashboardClose}>
+                  Admin
+                </MenuItem>
+              )}
+              {userType === "cafeteria" && (
+                <MenuItem component={Link} to="/dashboard/cafeteria" onClick={handleDashboardClose}>
+                  Cafeteria
+                </MenuItem>
+              )}
+              {userType === "donor" && (
+                <MenuItem component={Link} to="/dashboard/donor" onClick={handleDashboardClose}>
+                  Donor
+                </MenuItem>
+              )}
             </Menu>
             <Button color="inherit" component={Link} to="/about-us" sx={{ color: "#111", fontWeight: 700 }}>
               About Us

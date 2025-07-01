@@ -1,18 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import Navbar from "../components/Navbar";
-import { Button, Container, TextField, Typography, Paper, Box } from "@mui/material";
+import { Button, Container, Typography, Paper, Box } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 
 function ForgotPassword() {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // TODO: Connect to backend to send reset email
-    setSubmitted(true);
-  };
-
   return (
     <>
       <Navbar />
@@ -44,42 +35,18 @@ function ForgotPassword() {
                 fontFamily: "'Titillium Web', 'Roboto', Arial, sans-serif",
               }}
             >
-              Forgot Password
+              Page Not Found
             </Typography>
-            {!submitted ? (
-              <form onSubmit={handleSubmit}>
-                <TextField
-                  label="Enter your email"
-                  name="email"
-                  type="email"
-                  fullWidth
-                  margin="normal"
-                  required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  sx={{ mb: 2 }}
-                />
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  sx={{ mt: 2, py: 1.5, borderRadius: 2 }}
-                >
-                  Send Reset Link
-                </Button>
-              </form>
-            ) : (
-              <Typography sx={{ mt: 2 }} color="success.main">
-                If an account with that email exists, a password reset link has been sent.
-              </Typography>
-            )}
+            <Typography sx={{ mt: 2 }} color="text.secondary">
+              Sorry, the page you are looking for does not exist.
+            </Typography>
             <Box sx={{ mt: 3 }}>
               <Button
                 component={RouterLink}
                 to="/login"
-                variant="text"
+                variant="contained"
                 color="primary"
+                sx={{ borderRadius: 2 }}
               >
                 Back to Login
               </Button>

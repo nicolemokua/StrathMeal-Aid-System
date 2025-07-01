@@ -12,16 +12,30 @@ function Register() {
     course: "",
     year_of_study: "",
   });
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Connect to backend
-    localStorage.setItem("userLoggedIn", "true");
-    alert("Registration submitted!");
-    navigate("/home");
+    setError("");
+    try {
+      const res = await fetch("http://localhost:5000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.message || "Registration failed");
+        return;
+      }
+      localStorage.setItem("userLoggedIn", "true");
+      navigate("/home");
+    } catch (err) {
+      setError("Network error");
+    }
   };
 
   return (
@@ -58,67 +72,14 @@ function Register() {
               Student Registration
             </Typography>
             <form onSubmit={handleSubmit}>
-              <TextField
-                label="Name"
-                name="name"
-                fullWidth
-                margin="normal"
-                required
-                value={form.name}
-                onChange={handleChange}
-              />
-              <TextField
-                label="Email"
-                name="email"
-                type="email"
-                fullWidth
-                margin="normal"
-                required
-                value={form.email}
-                onChange={handleChange}
-              />
-              <TextField
-                label="Password"
-                name="password"
-                type="password"
-                fullWidth
-                margin="normal"
-                required
-                value={form.password}
-                onChange={handleChange}
-              />
-              <TextField
-                label="Phone"
-                name="phone"
-                fullWidth
-                margin="normal"
-                value={form.phone}
-                onChange={handleChange}
-              />
-              <TextField
-                label="Course"
-                name="course"
-                fullWidth
-                margin="normal"
-                value={form.course}
-                onChange={handleChange}
-              />
-              <TextField
-                label="Year of Study"
-                name="year_of_study"
-                type="number"
-                fullWidth
-                margin="normal"
-                value={form.year_of_study}
-                onChange={handleChange}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                sx={{ mt: 2, py: 1.5, borderRadius: 2 }}
-              >
+              <TextField label="Name" name="name" fullWidth margin="normal" required value={form.name} onChange={handleChange} />
+              <TextField label="Email" name="email" type="email" fullWidth margin="normal" required value={form.email} onChange={handleChange} />
+              <TextField label="Password" name="password" type="password" fullWidth margin="normal" required value={form.password} onChange={handleChange} />
+              <TextField label="Phone" name="phone" fullWidth margin="normal" value={form.phone} onChange={handleChange} />
+              <TextField label="Course" name="course" fullWidth margin="normal" value={form.course} onChange={handleChange} />
+              <TextField label="Year of Study" name="year_of_study" type="number" fullWidth margin="normal" value={form.year_of_study} onChange={handleChange} />
+              {error && <Typography color="error" sx={{ mt: 1 }}>{error}</Typography>}
+              <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2, py: 1.5, borderRadius: 2 }}>
                 Register
               </Button>
             </form>

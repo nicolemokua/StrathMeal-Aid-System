@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function RegisterDonor() {
   const [form, setForm] = useState({
-    donorId: "",
     name: "",
     email: "",
     phone: "",
@@ -15,24 +14,27 @@ export default function RegisterDonor() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const generateDonorId = () => {
+    return 'D' + Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
-    if (!/^\d{6}$/.test(form.donorId)) {
-      setError("Donor ID must be 6 digits.");
-      return;
-    }
+    // Auto-generate donorId
+    const donorId = generateDonorId();
     // Save to "donors" in localStorage
     const donors = JSON.parse(localStorage.getItem("donors") || "[]");
-    donors.push({ ...form });
+    donors.push({ ...form, donorId });
     localStorage.setItem("donors", JSON.stringify(donors));
     localStorage.setItem("userLoggedIn", "true");
     localStorage.setItem("userCreated", "true");
     localStorage.setItem("donorName", form.name);
     localStorage.setItem("donorEmail", form.email);
-    const uniqueKey = `donor_${form.donorId}`;
-    localStorage.setItem(uniqueKey, JSON.stringify(form));
-    navigate("/home");
+    const uniqueKey = `donor_${donorId}`;
+    localStorage.setItem(uniqueKey, JSON.stringify({ ...form, donorId }));
+    localStorage.setItem("userType", "donor");
+    navigate("/donor");
   };
 
   return (
@@ -45,7 +47,6 @@ export default function RegisterDonor() {
               Donor Registration
             </Typography>
             <form onSubmit={handleSubmit}>
-              <TextField label="Donor ID" name="donorId" fullWidth margin="normal" required value={form.donorId} onChange={handleChange} inputProps={{ maxLength: 6 }} />
               <TextField label="Name" name="name" fullWidth margin="normal" required value={form.name} onChange={handleChange} />
               <TextField label="Email" name="email" type="email" fullWidth margin="normal" required value={form.email} onChange={handleChange} />
               <TextField label="Phone" name="phone" fullWidth margin="normal" required value={form.phone} onChange={handleChange} />

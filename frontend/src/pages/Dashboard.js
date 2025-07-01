@@ -6,6 +6,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import BookIcon from "@mui/icons-material/Book";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import { useNavigate } from "react-router-dom";
 
 function getStudentProfile() {
   // Example: fetch from localStorage or context
@@ -20,6 +21,7 @@ function getStudentProfile() {
 
 export default function Dashboard() {
   const profile = getStudentProfile();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const vouchers = JSON.parse(localStorage.getItem("vouchers") || "[]");
@@ -47,6 +49,15 @@ export default function Dashboard() {
     });
     localStorage.setItem("vouchers", JSON.stringify(vouchers));
   }, []);
+
+  useEffect(() => {
+    // Check if the user is a student
+    const userRole = localStorage.getItem("userRole");
+    if (userRole !== "student") {
+      // If not a student, redirect to the appropriate page
+      navigate("/not-authorized"); // Change this to the route you want to redirect to
+    }
+  }, [navigate]);
 
   return (
     <>
