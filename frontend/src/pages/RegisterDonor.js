@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
 import { Button, Container, TextField, Typography, Paper, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -8,6 +7,7 @@ export default function RegisterDonor() {
     name: "",
     email: "",
     phone: "",
+    password: "", 
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -21,25 +21,24 @@ export default function RegisterDonor() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
-    // Auto-generate donorId
     const donorId = generateDonorId();
-    // Save to "donors" in localStorage
     const donors = JSON.parse(localStorage.getItem("donors") || "[]");
     donors.push({ ...form, donorId });
     localStorage.setItem("donors", JSON.stringify(donors));
-    localStorage.setItem("userLoggedIn", "true");
-    localStorage.setItem("userCreated", "true");
-    localStorage.setItem("donorName", form.name);
     localStorage.setItem("donorEmail", form.email);
     const uniqueKey = `donor_${donorId}`;
     localStorage.setItem(uniqueKey, JSON.stringify({ ...form, donorId }));
     localStorage.setItem("userType", "donor");
-    navigate("/donor");
+    localStorage.setItem("donorPassword", form.password);
+    localStorage.setItem("userLoggedIn", "true");
+    localStorage.setItem("userCreated", "true");
+    localStorage.setItem("donorName", form.name);
+    navigate("/login"); 
   };
 
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <Box sx={{ minHeight: "90vh", background: "linear-gradient(120deg, #e3f2fd 0%, #fce4ec 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Container maxWidth="sm">
           <Paper elevation={5} sx={{ p: 5, borderRadius: 4, textAlign: "center" }}>
@@ -50,6 +49,7 @@ export default function RegisterDonor() {
               <TextField label="Name" name="name" fullWidth margin="normal" required value={form.name} onChange={handleChange} />
               <TextField label="Email" name="email" type="email" fullWidth margin="normal" required value={form.email} onChange={handleChange} />
               <TextField label="Phone" name="phone" fullWidth margin="normal" required value={form.phone} onChange={handleChange} />
+              <TextField label="Password" name="password" type="password" fullWidth margin="normal" required value={form.password} onChange={handleChange} />
               {error && <Typography color="error" sx={{ mt: 1 }}>{error}</Typography>}
               <Button type="submit" variant="contained" sx={{ background: "#16a34a", color: "#fff", mt: 2, py: 1.5, borderRadius: 2 }}>
                 Register

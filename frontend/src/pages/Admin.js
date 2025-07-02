@@ -9,6 +9,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import UserManagement from "../components/UserManagement";
 
 const MIN_MEAL_KITTY = 10000; // Set to your desired minimum value
 
@@ -188,6 +189,14 @@ export default function Admin() {
               Students
             </Button>
             <Button
+              variant={activeTab === "users" ? "contained" : "outlined"}
+              startIcon={<PeopleIcon />}
+              onClick={() => setActiveTab("users")}
+              sx={{ fontWeight: 600 }}
+            >
+              Users
+            </Button>
+            <Button
               variant={activeTab === "vouchers" ? "contained" : "outlined"}
               startIcon={<CreditCardIcon />}
               onClick={() => setActiveTab("vouchers")}
@@ -297,6 +306,11 @@ export default function Admin() {
                 color="#1976d2"
               />
             </Paper>
+          )}
+
+          {/* Users Tab */}
+          {activeTab === "users" && (
+            <UserManagement />
           )}
 
           {/* Vouchers Tab */}

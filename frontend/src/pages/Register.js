@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
 import { Button, Container, TextField, Typography, Paper, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -32,7 +31,7 @@ function Register() {
         return;
       }
       localStorage.setItem("userLoggedIn", "true");
-      navigate("/home");
+      navigate("/login"); 
     } catch (err) {
       setError("Network error");
     }
@@ -40,7 +39,7 @@ function Register() {
 
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <Box
         sx={{
           minHeight: "90vh",

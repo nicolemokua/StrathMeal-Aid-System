@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
 import { Button, Container, TextField, Typography, Paper, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -27,16 +26,12 @@ export default function RegisterStudent() {
     if (
       !/^\d{4}$/.test(form.year_of_study) ||
       parseInt(form.year_of_study) < minYear ||
-      parseInt(form.year_of_study) > currentYear + 10 // allow up to 10 years ahead
+      parseInt(form.year_of_study) > currentYear + 10
     ) return `Year of study must be a 4-digit year from ${minYear} onwards.`;
     return "";
   };
 
-  const generateStudentId = () => {
-    return 'S' + Math.floor(100000 + Math.random() * 900000).toString();
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     const validationError = validateForm();
@@ -44,30 +39,34 @@ export default function RegisterStudent() {
       setError(validationError);
       return;
     }
-    // Auto-generate studentId
-    const studentId = generateStudentId();
-    const uniqueKey = `student_${studentId}`;
-    localStorage.setItem(uniqueKey, JSON.stringify({
-      ...form,
-      studentId,
-      status: "pending",
-      registration_date: new Date().toISOString(),
-      fee_balance: 0,
-      parent_guardian_unemployed: false,
-      has_siblings: false,
-      has_scholarship: false,
-      referral_letter: false,
-    }));
-    localStorage.setItem("userLoggedIn", "true");
-    localStorage.setItem("userCreated", "true");
-    localStorage.setItem("studentName", form.name);
-    localStorage.setItem("userType", "student");
-    navigate("/student");
+    try {
+      const res = await fetch("http://localhost:5000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          role: "student",
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.message || "Registration failed");
+        return;
+      }
+      localStorage.setItem("userLoggedIn", "true");
+      localStorage.setItem("userCreated", "true");
+      localStorage.setItem("studentName", form.name);
+      localStorage.setItem("studentEmail", form.email);
+      localStorage.setItem("userEmail", form.email);
+      localStorage.setItem("userType", "student");
+      navigate("/dashboard/student");
+    } catch (err) {
+      setError("Network error");
+    }
   };
 
   return (
     <>
-      <Navbar />
       <Box sx={{ minHeight: "90vh", background: "linear-gradient(120deg, #e3f2fd 0%, #fce4ec 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <Container maxWidth="sm">
           <Paper elevation={5} sx={{ p: 5, borderRadius: 4, textAlign: "center" }}>

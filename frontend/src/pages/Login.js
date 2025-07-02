@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar";
 import { Button, Container, TextField, Typography, Paper, Box, Link as MuiLink } from "@mui/material";
 import { useNavigate, Link } from "react-router-dom";
 import PersonIcon from "@mui/icons-material/Person";
@@ -34,15 +33,17 @@ function Login() {
         return;
       }
       localStorage.setItem("userLoggedIn", "true");
+      localStorage.setItem("userType", data.user.role);
+      localStorage.setItem("userRole", data.user.role); 
       // Determine user type and redirect accordingly
-      if (data.userType === "student") {
-        navigate("/student");
-      } else if (data.userType === "admin") {
-        navigate("/admin");
-      } else if (data.userType === "donor") {
-        navigate("/donor");
-      } else if (data.userType === "cafeteria") {
-        navigate("/cafeteria");
+      if (data.user && data.user.role === "student") {
+        navigate("/home"); 
+      } else if (data.user && data.user.role === "admin") {
+        navigate("/dashboard/admin");
+      } else if (data.user && data.user.role === "donor") {
+        navigate("/dashboard/donor");
+      } else if (data.user && data.user.role === "cafeteria") {
+        navigate("/dashboard/cafeteria");
       } else {
         navigate("/notfound");
       }
@@ -54,7 +55,7 @@ function Login() {
 
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <Box
         sx={{
           minHeight: "100vh",
@@ -196,6 +197,13 @@ function Login() {
                     Don't have an account?{" "}
                     <MuiLink component={Link} to="/register-type" sx={{ color: "#1976d2", fontWeight: 600 }}>
                       Create account
+                    </MuiLink>
+                  </Typography>
+                  {/* Add Admin Login link below */}
+                  <Typography sx={{ fontSize: 15, color: "#666", mt: 2 }}>
+                    Are you an admin?{" "}
+                    <MuiLink component={Link} to="/admin-login" sx={{ color: "#1976d2", fontWeight: 600 }}>
+                      Admin Login
                     </MuiLink>
                   </Typography>
                 </Box>

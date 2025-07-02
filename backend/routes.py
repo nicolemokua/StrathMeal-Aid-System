@@ -7,10 +7,18 @@ bp = Blueprint('api', __name__)
 @bp.route('/api/register', methods=['POST'])
 def register():
     data = request.json
+   
+    password = data.get('password', None)
+    if password is None and data.get('role', 'student') == 'student':
+        
+        password = "nopassword"
+    elif not password:
+        return jsonify({'message': 'Password is required'}), 400
+
     user = User(
         name=data['name'],
         email=data['email'],
-        password=data['password'],  # Hash in production!
+        password=password, 
         phone=data.get('phone'),
         course=data.get('course'),
         year_of_study=data.get('year_of_study'),
@@ -27,6 +35,22 @@ def login():
     if user:
         return jsonify({'message': 'Login successful', 'user': {'id': user.id, 'name': user.name, 'role': user.role}})
     return jsonify({'message': 'Invalid credentials'}), 401
+
+@bp.route('/api/admin-login', methods=['POST'])
+def admin_login():
+    data = request.json
+    admin_email = "nicolemokua08@gmail.com"
+    admin_password = "nimo123"
+    if data.get("email") == admin_email and data.get("password") == admin_password:
+        return jsonify({
+            "message": "Admin login successful",
+            "user": {
+                "name": "Admin",
+                "role": "admin",
+                "email": admin_email
+            }
+        }), 200
+    return jsonify({"message": "Invalid admin credentials"}), 401
 
 # --- Applications ---
 @bp.route('/api/applications', methods=['POST'])
@@ -114,3 +138,22 @@ def get_users():
     return jsonify([{
         'id': u.id, 'name': u.name, 'email': u.email, 'role': u.role
     } for u in users])
+
+@bp.route('/api/user-profile', methods=['GET'])
+def user_profile():
+    email = request.args.get('email')
+    if not email:
+        return jsonify({'message': 'Email required'}), 400
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    return jsonify({
+        'user': {
+            'name': user.name,
+            'email': user.email,
+            'course': getattr(user, 'course', ''),
+            'year_of_study': getattr(user, 'year_of_study', ''),
+            'role': user.role,
+            
+        }
+    })

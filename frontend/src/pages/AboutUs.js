@@ -102,7 +102,7 @@ export default function AboutUs() {
                   boxShadow: 3,
                   ":hover": { background: "linear-gradient(90deg, #0f766e 0%, #2dd4bf 100%)" },
                 }}
-                href="/register"
+                href="/register/student" 
               >
                 Join StrathMeal Aid
               </Button>

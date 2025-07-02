@@ -1,25 +1,15 @@
-import React, { useState } from "react";
-import { AppBar, Toolbar, Typography, Button, Menu, MenuItem, Box } from "@mui/material";
+import React from "react";
+import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import { Link } from "react-router-dom";
 
 function Navbar() {
   const isLoggedIn = !!localStorage.getItem("userLoggedIn");
-  const userType = localStorage.getItem("userType"); // Assuming userType is stored in localStorage
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  const handleDashboardMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleDashboardClose = () => {
-    setAnchorEl(null);
-  };
 
   return (
     <AppBar
       position="static"
       sx={{
-        background: "linear-gradient(135deg, #e0e7ef 0%, #e0f2f1 100%)", // Match main page background
+        background: "linear-gradient(135deg, #e0e7ef 0%, #e0f2f1 100%)",
         boxShadow: "0 4px 24px rgba(19,78,74,0.08)",
       }}
     >
@@ -44,46 +34,6 @@ function Navbar() {
         </Button>
         {isLoggedIn && (
           <>
-            {/* Dashboard Dropdown */}
-            <Button
-              color="inherit"
-              onClick={handleDashboardMenu}
-              aria-controls="dashboard-menu"
-              aria-haspopup="true"
-              sx={{ color: "#111", fontWeight: 700 }}
-            >
-              Dashboard
-            </Button>
-            <Menu
-              id="dashboard-menu"
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleDashboardClose}
-              MenuListProps={{
-                "aria-labelledby": "dashboard-button",
-              }}
-            >
-              {userType === "student" && (
-                <MenuItem component={Link} to="/dashboard/student" onClick={handleDashboardClose}>
-                  Student
-                </MenuItem>
-              )}
-              {userType === "admin" && (
-                <MenuItem component={Link} to="/dashboard/admin" onClick={handleDashboardClose}>
-                  Admin
-                </MenuItem>
-              )}
-              {userType === "cafeteria" && (
-                <MenuItem component={Link} to="/dashboard/cafeteria" onClick={handleDashboardClose}>
-                  Cafeteria
-                </MenuItem>
-              )}
-              {userType === "donor" && (
-                <MenuItem component={Link} to="/dashboard/donor" onClick={handleDashboardClose}>
-                  Donor
-                </MenuItem>
-              )}
-            </Menu>
             <Button color="inherit" component={Link} to="/about-us" sx={{ color: "#111", fontWeight: 700 }}>
               About Us
             </Button>

@@ -5,7 +5,6 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RegisterType from "./pages/RegisterType";
 import RegisterStudent from "./pages/RegisterStudent";
-import RegisterAdmin from "./pages/RegisterAdmin";
 import RegisterDonor from "./pages/RegisterDonor";
 import RegisterCafeteria from "./pages/RegisterCafeteria";
 import Dashboard from "./pages/Dashboard";
@@ -25,6 +24,7 @@ import Student from "./pages/Student";
 import Admin from "./pages/Admin";
 import Cafeteria from "./pages/Cafeteria";
 import Donor from "./pages/Donor";
+import AdminLogin from "./pages/AdminLogin";
 
 // Simple authentication check (replace with real auth logic)
 const isAuthenticated = () => {
@@ -124,9 +124,9 @@ function App() {
           <Route path="/support" element={<Support />} />
           <Route path="/register-type" element={<RegisterType />} />
           <Route path="/register/student" element={<RegisterStudent />} />
-          <Route path="/register/admin" element={<RegisterAdmin />} />
           <Route path="/register/donor" element={<RegisterDonor />} />
           <Route path="/register/cafeteria" element={<RegisterCafeteria />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />

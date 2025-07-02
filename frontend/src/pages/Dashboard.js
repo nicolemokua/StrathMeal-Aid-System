@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import { Box, Typography, Paper, Grid, Avatar } from "@mui/material";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
@@ -8,20 +8,37 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { useNavigate } from "react-router-dom";
 
-function getStudentProfile() {
-  // Example: fetch from localStorage or context
-  return {
-    name: localStorage.getItem("studentName") || "Student",
-    email: localStorage.getItem("studentEmail") || "student@strathmore.edu",
-    course: localStorage.getItem("studentCourse") || "Course",
-    yearOfStudy: localStorage.getItem("studentYear") || "1",
-    status: "pending",
-  };
-}
-
 export default function Dashboard() {
-  const profile = getStudentProfile();
+  const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Fetch the current user's email from localStorage
+    const email =
+      localStorage.getItem("studentEmail") || localStorage.getItem("userEmail");
+    if (!email) {
+      navigate("/login");
+      return;
+    }
+
+    // Fetch the student profile from the backend
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/user-profile?email=${encodeURIComponent(
+            email
+          )}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch profile");
+        const data = await res.json();
+        setProfile(data.user);
+      } catch (err) {
+        setProfile(null);
+      }
+    };
+
+    fetchProfile();
+  }, [navigate]);
 
   useEffect(() => {
     const vouchers = JSON.parse(localStorage.getItem("vouchers") || "[]");
@@ -59,6 +76,24 @@ export default function Dashboard() {
     }
   }, [navigate]);
 
+  if (!profile) {
+    return (
+      <>
+        <Navbar />
+        <Box
+          sx={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Typography variant="h6">Loading profile...</Typography>
+        </Box>
+      </>
+    );
+  }
+
   return (
     <>
       <Navbar />
@@ -85,9 +120,8 @@ export default function Dashboard() {
             }}
           >
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-              Welcome , {profile.name}!
+              Welcome, {profile.name}!
             </Typography>
-            
           </Paper>
 
           {/* Profile Summary */}
@@ -111,7 +145,8 @@ export default function Dashboard() {
                   {profile.email}
                 </Typography>
                 <Typography sx={{ color: "#134e4a" }}>
-                  {profile.course} - Year {profile.yearOfStudy}
+                  {profile.course} - Year{" "}
+                  {profile.year_of_study || profile.yearOfStudy}
                 </Typography>
                 <Box
                   sx={{
