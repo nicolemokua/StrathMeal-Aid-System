@@ -13,9 +13,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch the current user's email from localStorage
-    const email =
-      localStorage.getItem("studentEmail") || localStorage.getItem("userEmail");
+    // Always fetch the current user's email from localStorage
+    const email = localStorage.getItem("studentEmail") || localStorage.getItem("userEmail");
     if (!email) {
       navigate("/login");
       return;
@@ -25,9 +24,7 @@ export default function Dashboard() {
     const fetchProfile = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/user-profile?email=${encodeURIComponent(
-            email
-          )}`
+          `http://localhost:5000/api/user-profile?email=${encodeURIComponent(email)}`
         );
         if (!res.ok) throw new Error("Failed to fetch profile");
         const data = await res.json();
@@ -38,42 +35,6 @@ export default function Dashboard() {
     };
 
     fetchProfile();
-  }, [navigate]);
-
-  useEffect(() => {
-    const vouchers = JSON.parse(localStorage.getItem("vouchers") || "[]");
-    const now = Date.now();
-    vouchers.forEach((voucher) => {
-      const expires = new Date(voucher.expiresAt).getTime();
-      if (voucher.status === "active") {
-        // 3 hours before expiry, send notification (placeholder)
-        if (expires - now <= 3 * 60 * 60 * 1000 && expires - now > 0) {
-          // TODO: Integrate push notification service here
-          // sendPushNotification(voucher.studentId, "Your voucher will expire in 3 hours!");
-        }
-        // If expired, apply grace period
-        if (now > expires && now <= expires + 6 * 60 * 60 * 1000) {
-          voucher.status = "grace";
-          voucher.expiresAt = new Date(
-            expires + 6 * 60 * 60 * 1000
-          ).toISOString();
-        }
-        // If grace period also expired
-        if (now > expires + 6 * 60 * 60 * 1000) {
-          voucher.status = "expired";
-        }
-      }
-    });
-    localStorage.setItem("vouchers", JSON.stringify(vouchers));
-  }, []);
-
-  useEffect(() => {
-    // Check if the user is a student
-    const userRole = localStorage.getItem("userRole");
-    if (userRole !== "student") {
-      // If not a student, redirect to the appropriate page
-      navigate("/not-authorized"); // Change this to the route you want to redirect to
-    }
   }, [navigate]);
 
   if (!profile) {

@@ -15,6 +15,17 @@ class User(db.Model):
     donations = db.relationship('Donation', backref='donor', lazy=True)
     feedbacks = db.relationship('Feedback', backref='user', lazy=True)
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "phone": self.phone,
+            "course": self.course,
+            "year_of_study": self.year_of_study,
+            "role": self.role
+        }
+
 class Application(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

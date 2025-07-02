@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from .models import db, User, Application, Voucher, Donation, Feedback
 
 bp = Blueprint('api', __name__)
@@ -33,7 +34,15 @@ def login():
     data = request.json
     user = User.query.filter_by(email=data['email'], password=data['password']).first()
     if user:
-        return jsonify({'message': 'Login successful', 'user': {'id': user.id, 'name': user.name, 'role': user.role}})
+        return jsonify({'message': 'Login successful', 'user': {
+            'id': user.id,
+            'name': user.name,
+            'role': user.role,
+            'email': user.email,  
+            'phone': user.phone,
+            'course': user.course,
+            'year_of_study': user.year_of_study
+        }})
     return jsonify({'message': 'Invalid credentials'}), 401
 
 @bp.route('/api/admin-login', methods=['POST'])
@@ -72,6 +81,29 @@ def get_applications(user_id):
     return jsonify([{
         'id': a.id, 'date': a.date, 'status': a.status, 'remarks': a.remarks
     } for a in apps])
+
+@bp.route('/api/apply', methods=['POST'])
+@jwt_required()  # If using JWT for authentication
+def apply():
+    data = request.json
+    user_email = get_jwt_identity()  # Or however you get the logged-in user
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    # Only use eligibility fields from data, rest from user
+    application_data = {
+        "name": user.name,
+        "email": user.email,
+        "phone": user.phone,
+        "course": user.course,
+        "year_of_study": user.year_of_study,
+        "fee_balance": data.get("fee_balance"),
+        "parent_guardian_unemployed": data.get("parent_guardian_unemployed"),
+        "has_siblings": data.get("has_siblings"),
+        "has_scholarship": data.get("has_scholarship"),
+    }
+    
 
 # --- Vouchers ---
 @bp.route('/api/vouchers/<int:user_id>', methods=['GET'])
@@ -142,18 +174,7 @@ def get_users():
 @bp.route('/api/user-profile', methods=['GET'])
 def user_profile():
     email = request.args.get('email')
-    if not email:
-        return jsonify({'message': 'Email required'}), 400
     user = User.query.filter_by(email=email).first()
     if not user:
-        return jsonify({'message': 'User not found'}), 404
-    return jsonify({
-        'user': {
-            'name': user.name,
-            'email': user.email,
-            'course': getattr(user, 'course', ''),
-            'year_of_study': getattr(user, 'year_of_study', ''),
-            'role': user.role,
-            
-        }
-    })
+        return jsonify({'user': None}), 404
+    return jsonify({'user': user.to_dict()})

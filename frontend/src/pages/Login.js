@@ -37,7 +37,11 @@ function Login() {
       localStorage.setItem("userRole", data.user.role); 
       // Determine user type and redirect accordingly
       if (data.user && data.user.role === "student") {
-        navigate("/home"); 
+        localStorage.setItem("studentEmail", data.user.email);
+        localStorage.setItem("userEmail", data.user.email);
+        localStorage.setItem("userType", data.user.role);
+        localStorage.setItem("userRole", data.user.role);
+        navigate("/home");
       } else if (data.user && data.user.role === "admin") {
         navigate("/dashboard/admin");
       } else if (data.user && data.user.role === "donor") {

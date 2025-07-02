@@ -1,6 +1,6 @@
 import React from "react";
 import Navbar from "../components/Navbar";
-import { Box, Typography, Container, Paper, Button } from "@mui/material";
+import { Box, Typography, Container, Paper } from "@mui/material";
 
 export default function AboutUs() {
   return (
@@ -87,25 +87,7 @@ export default function AboutUs() {
                   Together, we are building a stronger, healthier, and more supportive campus community.
                 </span>
               </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                size="large"
-                sx={{
-                  borderRadius: 8,
-                  fontWeight: 700,
-                  px: 5,
-                  py: 1.5,
-                  mt: 2,
-                  background: "linear-gradient(90deg, #134e4a 0%, #2dd4bf 100%)",
-                  color: "#fff",
-                  boxShadow: 3,
-                  ":hover": { background: "linear-gradient(90deg, #0f766e 0%, #2dd4bf 100%)" },
-                }}
-                href="/register/student" 
-              >
-                Join StrathMeal Aid
-              </Button>
+              {/* The Join StrathMeal Aid button has been removed */}
             </Box>
           </Paper>
         </Container>
