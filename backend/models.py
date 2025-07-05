@@ -2,6 +2,7 @@ from . import db
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.String(32), unique=True, nullable=True)  # <-- Add this line
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
@@ -18,6 +19,7 @@ class User(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
+            "student_id": self.student_id,  # <-- Add this line
             "name": self.name,
             "email": self.email,
             "phone": self.phone,
@@ -25,7 +27,6 @@ class User(db.Model):
             "year_of_study": self.year_of_study,
             "role": self.role
         }
-
 class Application(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

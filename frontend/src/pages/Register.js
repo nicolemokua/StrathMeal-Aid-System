@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 function Register() {
   const [form, setForm] = useState({
+    
     name: "",
+    student_id: "",
     email: "",
     password: "",
     phone: "",
@@ -72,6 +74,7 @@ function Register() {
             </Typography>
             <form onSubmit={handleSubmit}>
               <TextField label="Name" name="name" fullWidth margin="normal" required value={form.name} onChange={handleChange} />
+              <TextField label="Student ID" name="student_id" fullWidth margin="normal" required value={form.student_id} onChange={handleChange} />
               <TextField label="Email" name="email" type="email" fullWidth margin="normal" required value={form.email} onChange={handleChange} />
               <TextField label="Password" name="password" type="password" fullWidth margin="normal" required value={form.password} onChange={handleChange} />
               <TextField label="Phone" name="phone" fullWidth margin="normal" value={form.phone} onChange={handleChange} />

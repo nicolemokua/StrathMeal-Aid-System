@@ -35,6 +35,8 @@ function Login() {
       localStorage.setItem("userLoggedIn", "true");
       localStorage.setItem("userType", data.user.role);
       localStorage.setItem("userRole", data.user.role); 
+      // After successful login
+      localStorage.setItem("accessToken", data.access_token);
       // Determine user type and redirect accordingly
       if (data.user && data.user.role === "student") {
         localStorage.setItem("studentEmail", data.user.email);

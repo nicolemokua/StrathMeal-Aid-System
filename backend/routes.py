@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask_jwt_extended import get_jwt_identity, jwt_required, create_access_token
 from .models import db, User, Application, Voucher, Donation, Feedback
 
 bp = Blueprint('api', __name__)
@@ -8,41 +8,56 @@ bp = Blueprint('api', __name__)
 @bp.route('/api/register', methods=['POST'])
 def register():
     data = request.json
-   
-    password = data.get('password', None)
-    if password is None and data.get('role', 'student') == 'student':
-        
-        password = "nopassword"
-    elif not password:
-        return jsonify({'message': 'Password is required'}), 400
+    student_id = data.get("student_id")
+    name = data.get("name")
+    email = data.get("email")
+    password = data.get("password")
+    phone = data.get("phone")
+    course = data.get("course")
+    year_of_study = data.get("year_of_study")
+
+    # Validate required fields
+    if not student_id or not name or not email or not password:
+        return jsonify({"message": "Missing required fields"}), 400
+
+    # Check for uniqueness
+    if User.query.filter_by(email=email).first():
+        return jsonify({"message": "Email already registered"}), 400
+    if User.query.filter_by(student_id=student_id).first():
+        return jsonify({"message": "Student ID already registered"}), 400
 
     user = User(
-        name=data['name'],
-        email=data['email'],
-        password=password, 
-        phone=data.get('phone'),
-        course=data.get('course'),
-        year_of_study=data.get('year_of_study'),
-        role=data.get('role', 'student')
+        student_id=student_id,
+        name=name,
+        email=email,
+        password=password,
+        phone=phone,
+        course=course,
+        year_of_study=year_of_study
     )
     db.session.add(user)
     db.session.commit()
-    return jsonify({'message': 'User registered successfully'}), 201
+    return jsonify({"message": "Registration successful"}), 201
 
 @bp.route('/api/login', methods=['POST'])
 def login():
     data = request.json
     user = User.query.filter_by(email=data['email'], password=data['password']).first()
     if user:
-        return jsonify({'message': 'Login successful', 'user': {
-            'id': user.id,
-            'name': user.name,
-            'role': user.role,
-            'email': user.email,  
-            'phone': user.phone,
-            'course': user.course,
-            'year_of_study': user.year_of_study
-        }})
+        access_token = create_access_token(identity=user.email)
+        return jsonify({
+            'message': 'Login successful',
+            'access_token': access_token,
+            'user': {
+                'id': user.id,
+                'name': user.name,
+                'role': user.role,
+                'email': user.email,  
+                'phone': user.phone,
+                'course': user.course,
+                'year_of_study': user.year_of_study
+            }
+        })
     return jsonify({'message': 'Invalid credentials'}), 401
 
 @bp.route('/api/admin-login', methods=['POST'])
@@ -82,6 +97,20 @@ def get_applications(user_id):
         'id': a.id, 'date': a.date, 'status': a.status, 'remarks': a.remarks
     } for a in apps])
 
+@bp.route('/api/applications', methods=['GET'])
+def get_all_applications():
+    apps = Application.query.all()
+    return jsonify({'applications': [
+        {
+            'id': a.id,
+            'user_id': a.user_id,
+            'date': a.date,
+            'status': a.status,
+            'remarks': a.remarks
+            # add more fields as needed
+        } for a in apps
+    ]})
+
 @bp.route('/api/apply', methods=['POST'])
 @jwt_required()  # If using JWT for authentication
 def apply():
@@ -103,7 +132,18 @@ def apply():
         "has_siblings": data.get("has_siblings"),
         "has_scholarship": data.get("has_scholarship"),
     }
-    
+
+    # Example: Save application to DB (you may need to adjust fields)
+    application = Application(
+        user_id=user.id,
+        date=data.get("date"),
+        status="Pending",
+        remarks=""
+    )
+    db.session.add(application)
+    db.session.commit()
+
+    return jsonify({"message": "Application submitted successfully"}), 201
 
 # --- Vouchers ---
 @bp.route('/api/vouchers/<int:user_id>', methods=['GET'])
