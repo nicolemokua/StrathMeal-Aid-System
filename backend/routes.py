@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity, jwt_required, create_access_token
 from .models import db, User, Application, Voucher, Donation, Feedback
+import datetime
 
 bp = Blueprint('api', __name__)
 
@@ -60,14 +61,18 @@ def login():
         })
     return jsonify({'message': 'Invalid credentials'}), 401
 
+from flask_jwt_extended import create_access_token
+
 @bp.route('/api/admin-login', methods=['POST'])
 def admin_login():
     data = request.json
     admin_email = "nicolemokua08@gmail.com"
     admin_password = "nimo123"
     if data.get("email") == admin_email and data.get("password") == admin_password:
+        access_token = create_access_token(identity=admin_email)
         return jsonify({
             "message": "Admin login successful",
+            "access_token": access_token,
             "user": {
                 "name": "Admin",
                 "role": "admin",
@@ -98,52 +103,140 @@ def get_applications(user_id):
     } for a in apps])
 
 @bp.route('/api/applications', methods=['GET'])
+@jwt_required()
 def get_all_applications():
-    apps = Application.query.all()
-    return jsonify({'applications': [
-        {
-            'id': a.id,
-            'user_id': a.user_id,
-            'date': a.date,
-            'status': a.status,
-            'remarks': a.remarks
-            # add more fields as needed
-        } for a in apps
-    ]})
+    # Only allow admin (add your admin check logic)
+    apps = (
+        db.session.query(Application, User)
+        .join(User, Application.user_id == User.id)
+        .order_by(Application.date.desc())
+        .all()
+    )
+    result = []
+    for app, user in apps:
+        result.append({
+            "id": app.id,
+            "name": user.name,
+            "email": user.email,
+            "status": app.status,
+            "date": app.date,
+        })
+    return jsonify(result)
+
+def get_current_semester(date=None):
+    """Returns (year, semester_number) for a given date."""
+    if date is None:
+        date = datetime.date.today()
+    year = date.year
+    month = date.month
+    if 4 <= month <= 7:
+        return (year, 1)  # Semester 1: April-July
+    elif 8 <= month <= 12:
+        return (year, 2)  # Semester 2: August-December
+    else:
+        # Jan-March: treat as previous year's Semester 2 (or adjust as needed)
+        return (year - 1, 2)
+
+def get_semester_from_date(date_str):
+    """Parse date string and return (year, semester_number)."""
+    try:
+        date = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+    except Exception:
+        date = datetime.date.today()
+    return get_current_semester(date)
 
 @bp.route('/api/apply', methods=['POST'])
-@jwt_required()  # If using JWT for authentication
+@jwt_required()
 def apply():
     data = request.json
-    user_email = get_jwt_identity()  # Or however you get the logged-in user
+    user_email = get_jwt_identity()
     user = User.query.filter_by(email=user_email).first()
     if not user:
         return jsonify({"message": "User not found"}), 404
 
-    # Only use eligibility fields from data, rest from user
-    application_data = {
-        "name": user.name,
-        "email": user.email,
-        "phone": user.phone,
-        "course": user.course,
-        "year_of_study": user.year_of_study,
-        "fee_balance": data.get("fee_balance"),
-        "parent_guardian_unemployed": data.get("parent_guardian_unemployed"),
-        "has_siblings": data.get("has_siblings"),
-        "has_scholarship": data.get("has_scholarship"),
-    }
+    today = datetime.date.today()
+    current_year, current_sem = get_current_semester(today)
 
-    # Example: Save application to DB (you may need to adjust fields)
+    # Find latest application for this user
+    last_app = Application.query.filter_by(user_id=user.id).order_by(Application.id.desc()).first()
+    if last_app:
+        last_year, last_sem = get_semester_from_date(last_app.date or str(today))
+        if (last_year, last_sem) == (current_year, current_sem):
+            return jsonify({"message": "You have already applied this semester. Please wait for the next semester to re-apply."}), 400
+
+    # --- Auto-approval logic ---
+    # Example: use the same logic as frontend eligibility
+    score = 0
+    if data.get("fee_balance") is not None and float(data["fee_balance"]) <= 30000:
+        score += 30
+    if data.get("parent_guardian_unemployed"):
+        score += 30
+    if data.get("has_siblings"):
+        score += 10
+    if data.get("has_scholarship"):
+        score -= 20
+
+    if score >= 70:
+        status = "Approved"
+        remarks = "Highly eligible. Application auto-approved."
+    elif score >= 40:
+        status = "Approved"
+        remarks = "Eligible. Application auto-approved."
+    else:
+        status = "Rejected"
+        remarks = "Not eligible based on provided information."
+
     application = Application(
         user_id=user.id,
-        date=data.get("date"),
-        status="Pending",
-        remarks=""
+        date=str(today),
+        status=status,
+        remarks=remarks
     )
     db.session.add(application)
     db.session.commit()
 
-    return jsonify({"message": "Application submitted successfully"}), 201
+    return jsonify({
+        "message": f"Application {status.lower()}",
+        "status": status,
+        "remarks": remarks
+    }), 201
+
+@bp.route('/api/application-eligibility', methods=['GET'])
+@jwt_required()
+def application_eligibility():
+    user_email = get_jwt_identity()
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
+        return jsonify({"eligible": False, "reason": "User not found"}), 404
+
+    today = datetime.date.today()
+    current_year, current_sem = get_current_semester(today)
+    last_app = Application.query.filter_by(user_id=user.id).order_by(Application.id.desc()).first()
+    if last_app:
+        last_year, last_sem = get_semester_from_date(last_app.date or str(today))
+        if (last_year, last_sem) == (current_year, current_sem):
+            if last_app.status == "Pending":
+                return jsonify({
+                    "eligible": False,
+                    "reason": "Your application is pending review.",
+                    "last_status": "Pending",
+                    "remarks": last_app.remarks or ""
+                })
+            elif last_app.status == "Approved":
+                return jsonify({
+                    "eligible": False,
+                    "reason": "Your application has already been approved for this semester.",
+                    "last_status": "Approved",
+                    "remarks": last_app.remarks or ""
+                })
+            elif last_app.status == "Rejected":
+                return jsonify({
+                    "eligible": False,
+                    "reason": "You were rejected this semester. Please wait for the next semester.",
+                    "last_status": "Rejected",
+                    "remarks": last_app.remarks or ""
+                })
+    return jsonify({"eligible": True})
 
 # --- Vouchers ---
 @bp.route('/api/vouchers/<int:user_id>', methods=['GET'])

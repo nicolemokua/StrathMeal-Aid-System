@@ -32,33 +32,9 @@ export default function Admin() {
     lastUpdated: new Date().toISOString(),
   });
 
-  const [slaReminders, setSlaReminders] = useState([]);
-
-  useEffect(() => {
-    // Get all student keys
-    const studentKeys = Object.keys(localStorage).filter(k => k.startsWith("student_"));
-    const pending = studentKeys
-      .map(k => JSON.parse(localStorage.getItem(k)))
-      .filter(app => app.status === "pending" && app.registration_date);
-
-    // Calculate business days since registration
-    const today = new Date();
-    const remindersArr = pending.map(app => {
-      const regDate = new Date(app.registration_date);
-      let days = 0, d = new Date(regDate);
-      while (d <= today) {
-        // 0 = Sunday, 6 = Saturday
-        if (d.getDay() !== 0 && d.getDay() !== 6) days++;
-        d.setDate(d.getDate() + 1);
-      }
-      return {
-        ...app,
-        businessDays: days,
-        needsReminder: days >= 5 && days <= 7
-      };
-    });
-    setSlaReminders(remindersArr.filter(r => r.needsReminder));
-  }, [/* dependencies: update this if you have actions that approve/reject students */]);
+  const [applications, setApplications] = useState([]);
+  const [loadingApps, setLoadingApps] = useState(false);
+  const [error, setError] = useState(""); // Add this state
 
   useEffect(() => {
     if (mealKitty.totalFunds < MIN_MEAL_KITTY) {
@@ -80,6 +56,31 @@ export default function Admin() {
       // send alert at 95%
     }
   }, [mealKitty]);
+
+  useEffect(() => {
+    if (activeTab === "students") {
+      setLoadingApps(true);
+      setError(""); // Reset error
+      const token = localStorage.getItem("accessToken");
+      fetch("http://localhost:5000/api/applications", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch applications");
+          return res.json();
+        })
+        .then((data) => {
+          setApplications(data);
+          setLoadingApps(false);
+        })
+        .catch((err) => {
+          setError("Could not load applications. Please ensure you are logged in as admin.");
+          setLoadingApps(false);
+        });
+    }
+  }, [activeTab]);
 
   const formatCurrency = (amount) => `Shs. ${amount.toLocaleString()}`;
 
@@ -278,33 +279,45 @@ export default function Admin() {
           {activeTab === "students" && (
             <Paper sx={{ p: 4, borderRadius: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                Student Management
+                Student Applications
               </Typography>
               <Typography sx={{ color: "#666", mb: 2 }}>
-                Review and approve student applications
+                View all student applications and their status.
               </Typography>
-              {slaReminders.length > 0 && (
-                <Paper sx={{ p: 2, mb: 2, background: "#fffbe6", border: "1px solid #ffe082" }}>
-                  <Typography sx={{ color: "#b45309", fontWeight: 700 }}>
-                    Reminder: {slaReminders.length} student application(s) are approaching the 7 business day SLA for verification!
-                  </Typography>
-                  <ul>
-                    {slaReminders.map(r => (
-                      <li key={r.studentId || r.email}>
-                        {r.name} (ID: {r.studentId}) - Registered {r.businessDays} business days ago
-                      </li>
+              {loadingApps ? (
+                <Typography>Loading applications...</Typography>
+              ) : error ? (
+                <Typography color="error">{error}</Typography>
+              ) : !Array.isArray(applications) || applications.length === 0 ? (
+                <Typography>No student applications found.</Typography>
+              ) : (
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Name</th>
+                      <th>Status</th>
+                      <th>Email</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {applications.map((app, idx) => (
+                      <tr key={app.id || idx}>
+                        <td>{app.id}</td>
+                        <td>{app.name}</td>
+                        <td>
+                          <span className={`status-badge status-${app.status.toLowerCase()}`}>
+                            {app.status}
+                          </span>
+                        </td>
+                        <td>{app.email}</td>
+                        <td>{app.date}</td>
+                      </tr>
                     ))}
-                  </ul>
-                </Paper>
+                  </tbody>
+                </table>
               )}
-              <EmptyState
-                icon={<PeopleIcon />}
-                title="No Student Applications Yet"
-                description="Student applications will appear here once they register for the meal voucher system. You can review, approve, or reject applications from this panel."
-                actionText="View System Setup"
-                onAction={() => setShowSetupModal(true)}
-                color="#1976d2"
-              />
             </Paper>
           )}
 
@@ -529,3 +542,4 @@ export default function Admin() {
     </>
   );
 }
+

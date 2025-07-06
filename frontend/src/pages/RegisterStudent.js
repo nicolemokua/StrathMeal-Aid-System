@@ -12,6 +12,7 @@ import {
   Alert,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 export default function RegisterStudent() {
   const [studentDetails, setStudentDetails] = useState(null);
@@ -25,6 +26,12 @@ export default function RegisterStudent() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [eligibility, setEligibility] = useState({
+    loading: true,
+    eligible: false,
+    reason: "",
+  });
+  const [applicationResult, setApplicationResult] = useState(null);
 
   // Fetch student details on mount
   useEffect(() => {
@@ -43,6 +50,36 @@ export default function RegisterStudent() {
         else setError("Could not fetch student details.");
       })
       .catch(() => setError("Could not fetch student details."));
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      setEligibility({
+        loading: false,
+        eligible: false,
+        reason: "Not logged in.",
+      });
+      return;
+    }
+    fetch("http://localhost:5000/api/application-eligibility", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setEligibility({
+          loading: false,
+          eligible: data.eligible,
+          reason: data.reason || "",
+        });
+      })
+      .catch(() =>
+        setEligibility({
+          loading: false,
+          eligible: false,
+          reason: "Could not check eligibility.",
+        })
+      );
   }, []);
 
   const handleChange = (e) => {
@@ -164,7 +201,7 @@ export default function RegisterStudent() {
     }
     setIsSubmitting(true);
     try {
-      const token = localStorage.getItem("accessToken"); // <-- get JWT token
+      const token = localStorage.getItem("accessToken");
       const res = await fetch("http://localhost:5000/api/apply", {
         method: "POST",
         headers: {
@@ -176,14 +213,18 @@ export default function RegisterStudent() {
           ...studentDetails,
         }),
       });
+      const data = await res.json();
       if (!res.ok) {
-        const data = await res.json();
         setError(data.message || "Application failed");
         setIsSubmitting(false);
         return;
       }
       setIsSubmitting(false);
       setIsSubmitted(true);
+      setApplicationResult({
+        status: data.status,
+        remarks: data.remarks,
+      });
     } catch (err) {
       setError("Network error");
       setIsSubmitting(false);
@@ -205,7 +246,7 @@ export default function RegisterStudent() {
     );
   }
 
-  if (!studentDetails) {
+  if (eligibility.loading || !studentDetails) {
     return (
       <Box
         sx={{
@@ -216,12 +257,78 @@ export default function RegisterStudent() {
         }}
       >
         <CircularProgress />
-        <Typography sx={{ ml: 2 }}>Loading student details...</Typography>
+        <Typography sx={{ ml: 2 }}>Loading...</Typography>
       </Box>
     );
   }
 
-  if (isSubmitted) {
+  if (!eligibility.eligible) {
+    return (
+      <Box
+        sx={{
+          minHeight: "90vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Paper
+          elevation={5}
+          sx={{
+            p: 5,
+            borderRadius: 4,
+            textAlign: "center",
+            maxWidth: 400,
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+            Application Status
+          </Typography>
+          {eligibility.last_status === "Pending" && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Your application for this semester is <b>pending review</b>.
+              {eligibility.remarks && (
+                <>
+                  <br />
+                  <i>Remarks: {eligibility.remarks}</i>
+                </>
+              )}
+            </Alert>
+          )}
+          {eligibility.last_status === "Approved" && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              Your application for this semester has been <b>approved</b>.
+              {eligibility.remarks && (
+                <>
+                  <br />
+                  <i>Remarks: {eligibility.remarks}</i>
+                </>
+              )}
+            </Alert>
+          )}
+          {eligibility.last_status === "Rejected" && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              Your application for this semester was <b>rejected</b>. Please wait
+              for the next semester to re-apply.
+              {eligibility.remarks && (
+                <>
+                  <br />
+                  <i>Remarks: {eligibility.remarks}</i>
+                </>
+              )}
+            </Alert>
+          )}
+          {!eligibility.last_status && (
+            <Typography sx={{ color: "#f44336", mb: 2 }}>
+              {eligibility.reason || "You are not eligible to apply at this time."}
+            </Typography>
+          )}
+        </Paper>
+      </Box>
+    );
+  }
+
+  if (isSubmitted && applicationResult) {
     return (
       <Box
         sx={{
@@ -242,7 +349,7 @@ export default function RegisterStudent() {
         >
           <Box
             sx={{
-              background: "#e8f5e9",
+              background: applicationResult.status === "Approved" ? "#e8f5e9" : "#ffebee",
               width: 64,
               height: 64,
               mx: "auto",
@@ -253,23 +360,27 @@ export default function RegisterStudent() {
               justifyContent: "center",
             }}
           >
-            <CheckCircleIcon color="success" sx={{ fontSize: 40 }} />
+            {applicationResult.status === "Approved" ? (
+              <CheckCircleIcon color="success" sx={{ fontSize: 40 }} />
+            ) : (
+              <WarningAmberIcon color="error" sx={{ fontSize: 40 }} />
+            )}
           </Box>
           <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-            Application Submitted!
+            {applicationResult.status === "Approved"
+              ? "Application Approved!"
+              : "Application Rejected"}
           </Typography>
           <Typography sx={{ color: "#666", mb: 3 }}>
-            Your meal aid application has been successfully submitted. You will receive an email confirmation shortly.
+            {applicationResult.remarks}
           </Typography>
-          <Alert severity="info" sx={{ mb: 3 }}>
-            <strong>Status:</strong> Pending Review
-          </Alert>
           <Button
             variant="contained"
             color="primary"
             fullWidth
             onClick={() => {
               setIsSubmitted(false);
+              setApplicationResult(null);
               setForm({
                 fee_balance: "",
                 parent_guardian_unemployed: false,

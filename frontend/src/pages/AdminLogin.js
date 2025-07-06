@@ -31,6 +31,7 @@ export default function AdminLogin() {
       localStorage.setItem("userLoggedIn", "true");
       localStorage.setItem("userType", "admin");
       localStorage.setItem("userRole", "admin");
+      localStorage.setItem("accessToken", data.access_token); // <-- ADD THIS LINE
       navigate("/dashboard/admin");
     } catch (err) {
       setError("Network error");
