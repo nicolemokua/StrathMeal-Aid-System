@@ -91,92 +91,6 @@ export default function RegisterStudent() {
     setError("");
   };
 
-  // Eligibility logic (for preview only)
-  const calculateEligibilityScore = (application) => {
-    let score = 0;
-    let breakdown = [];
-    if (Number(application.fee_balance) <= 30000) {
-      score += 30;
-      breakdown.push({
-        criteria: "Fee balance ≤ 30,000",
-        points: 30,
-        met: true,
-      });
-    } else {
-      breakdown.push({
-        criteria: "Fee balance ≤ 30,000",
-        points: 0,
-        met: false,
-      });
-    }
-    if (application.parent_guardian_unemployed) {
-      score += 30;
-      breakdown.push({
-        criteria: "Parent/Guardian unemployed",
-        points: 30,
-        met: true,
-      });
-    } else {
-      breakdown.push({
-        criteria: "Parent/Guardian unemployed",
-        points: 0,
-        met: false,
-      });
-    }
-    if (application.has_siblings) {
-      score += 10;
-      breakdown.push({
-        criteria: "Has siblings",
-        points: 10,
-        met: true,
-      });
-    } else {
-      breakdown.push({
-        criteria: "Has siblings",
-        points: 0,
-        met: false,
-      });
-    }
-    if (application.has_scholarship) {
-      score -= 20;
-      breakdown.push({
-        criteria: "Has scholarship (deduction)",
-        points: -20,
-        met: true,
-      });
-    } else {
-      breakdown.push({
-        criteria: "No scholarship",
-        points: 0,
-        met: false,
-      });
-    }
-    return { score, breakdown };
-  };
-
-  const getEligibilityRecommendation = (score) => {
-    if (score >= 70)
-      return {
-        status: "highly_eligible",
-        text: "Highly Eligible",
-        color: "#16a34a",
-        bg: "#e8f5e9",
-      };
-    if (score >= 40)
-      return {
-        status: "eligible",
-        text: "Pre-Eligible",
-        color: "#f59e42",
-        bg: "#fffbe6",
-      };
-    return {
-      status: "not_eligible",
-      text: "Review Required",
-      color: "#f44336",
-      bg: "#ffebee",
-    };
-  };
-
   const validateForm = () => {
     if (
       form.fee_balance === "" ||
@@ -292,17 +206,7 @@ export default function RegisterStudent() {
           <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
             Application Status
           </Typography>
-          {eligibility.last_status === "Pending" && (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              Your application for this semester is <b>pending review</b>.
-              {eligibility.remarks && (
-                <>
-                  <br />
-                  <i>Remarks: {eligibility.remarks}</i>
-                </>
-              )}
-            </Alert>
-          )}
+          
           {eligibility.last_status === "Approved" && (
             <Alert severity="success" sx={{ mb: 2 }}>
               Your application for this semester has been <b>approved</b>.
@@ -389,7 +293,6 @@ export default function RegisterStudent() {
               fullWidth
               sx={{ mb: 2 }}
               onClick={() => {
-                // Set a flag in localStorage to indicate eligibility
                 localStorage.setItem("studentEligible", "true");
                 window.location.href = "/student";
               }}
@@ -397,32 +300,22 @@ export default function RegisterStudent() {
               Go to Dashboard
             </Button>
           )}
-          <Button
-            variant="outlined"
-            color="primary"
-            fullWidth
-            onClick={() => {
-              setIsSubmitted(false);
-              setApplicationResult(null);
-              setForm({
-                fee_balance: "",
-                parent_guardian_unemployed: false,
-                has_siblings: false,
-                has_scholarship: false,
-                additional_info: "",
-              });
-            }}
-          >
-            Submit Another Application
-          </Button>
+          {applicationResult.status === "Rejected" && (
+            <Button
+              variant="outlined"
+              color="primary"
+              fullWidth
+              onClick={() => window.location.href = "/home"}
+            >
+              Back to Homepage
+            </Button>
+          )}
         </Paper>
       </Box>
     );
   }
 
-  // Eligibility preview
-  const eligibilityPreview = calculateEligibilityScore(form);
-  const eligibilityStatus = getEligibilityRecommendation(eligibilityPreview.score);
+  
 
   return (
     <Box
@@ -444,38 +337,7 @@ export default function RegisterStudent() {
             Apply for financial assistance for your meals
           </Typography>
 
-          {/* Eligibility Preview */}
-          {(form.fee_balance ||
-            form.parent_guardian_unemployed ||
-            form.has_siblings ||
-            form.has_scholarship) && (
-            <Box
-              sx={{
-                background: eligibilityStatus.bg,
-                borderRadius: 2,
-                p: 2,
-                mb: 3,
-              }}
-            >
-              <Typography sx={{ fontWeight: 700, color: eligibilityStatus.color }}>
-                Eligibility Score: {eligibilityPreview.score} ({eligibilityStatus.text})
-              </Typography>
-              <ul style={{ textAlign: "left", margin: "12px auto", maxWidth: 400 }}>
-                <li style={{ color: eligibilityPreview.breakdown[0].met ? "#16a34a" : "#f44336" }}>
-                  Fee balance ≤ 30,000: <b>{eligibilityPreview.breakdown[0].points > 0 ? "+" : ""}{eligibilityPreview.breakdown[0].points} pts</b>
-                </li>
-                <li style={{ color: eligibilityPreview.breakdown[1].met ? "#16a34a" : "#f44336" }}>
-                  Parent/Guardian unemployed: <b>{eligibilityPreview.breakdown[1].points > 0 ? "+" : ""}{eligibilityPreview.breakdown[1].points} pts</b>
-                </li>
-                <li style={{ color: eligibilityPreview.breakdown[2].met ? "#16a34a" : "#f44336" }}>
-                  Has siblings: <b>{eligibilityPreview.breakdown[2].points > 0 ? "+" : ""}{eligibilityPreview.breakdown[2].points} pts</b>
-                </li>
-                <li style={{ color: eligibilityPreview.breakdown[3].met ? "#16a34a" : "#f44336" }}>
-                  Has scholarship: <b>{eligibilityPreview.breakdown[3].points > 0 ? "+" : ""}{eligibilityPreview.breakdown[3].points} pts</b>
-                </li>
-              </ul>
-            </Box>
-          )}
+         
 
           <form onSubmit={handleSubmit}>
             {/* Personal Information (pre-filled) */}
