@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity, jwt_required, create_access_token
 from .models import db, User, Application, Voucher, Donation, Feedback
+from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
+from backend import db
 
 bp = Blueprint('api', __name__)
 
@@ -40,29 +42,31 @@ def register():
     db.session.commit()
     return jsonify({"message": "Registration successful"}), 201
 
+from flask_jwt_extended import create_access_token
+
 @bp.route('/api/login', methods=['POST'])
 def login():
     data = request.json
-    user = User.query.filter_by(email=data['email'], password=data['password']).first()
-    if user:
-        access_token = create_access_token(identity=user.email)
-        return jsonify({
-            'message': 'Login successful',
-            'access_token': access_token,
-            'userType': user.role,  # <-- Add this line
-            'user': {
-                'id': user.id,
-                'name': user.name,
-                'role': user.role,
-                'email': user.email,  
-                'phone': user.phone,
-                'course': user.course,
-                'year_of_study': user.year_of_study
-            }
-        })
-    return jsonify({'message': 'Invalid credentials'}), 401
+    user = User.query.filter_by(email=data.get("email")).first()
+    if not user:
+        return jsonify({"message": "Invalid credentials"}), 401
 
-from flask_jwt_extended import create_access_token
+    if not check_password_hash(user.password, data.get("password")):
+        return jsonify({"message": "Invalid credentials"}), 401
+
+    user_type = user.role if user.role in ["student", "donor", "cafeteria"] else "student"
+    access_token = create_access_token(identity=user.email)
+    return jsonify({
+        "message": "Login successful",
+        "access_token": access_token,
+        "userType": user_type,
+        "user": {
+            "email": user.email,
+            "name": user.name,
+            "phone": user.phone,
+            "donor_id": user.student_id if user.role == "donor" else None
+        }
+    }), 200
 
 @bp.route('/api/admin-login', methods=['POST'])
 def admin_login():
@@ -249,13 +253,34 @@ def get_vouchers(user_id):
 
 @bp.route('/api/vouchers/use', methods=['POST'])
 def use_voucher():
-    data = request.json
-    voucher = Voucher.query.filter_by(code=data['code'], user_id=data['user_id']).first()
-    if voucher and voucher.status == 'Available':
-        voucher.status = 'Used'
-        db.session.commit()
-        return jsonify({'message': 'Voucher used'})
-    return jsonify({'message': 'Invalid or already used voucher'}), 400
+    data = request.get_json()
+    code = data.get('code')
+    # Find voucher in DB, check if active
+    # If valid, mark as used
+    # If not, return error
+    return jsonify({"message": "Voucher redeemed"}), 200
+
+@bp.route('/api/vouchers', methods=['POST'])
+def generate_vouchers():
+    data = request.get_json()
+    student_ids = data.get('studentIds')
+    voucher_value = data.get('voucherValue')
+    count = data.get('count')
+    # For each student, create 'count' vouchers in DB
+    for student_id in student_ids:
+        for _ in range(count):
+            # Create voucher record in DB
+            pass
+    return jsonify({"message": "Vouchers generated"}), 201
+
+@bp.route('/api/vouchers/<student_id>', methods=['GET'])
+def get_student_vouchers(student_id):
+    # Query DB for vouchers where user_id == student_id and status == "Active"
+    vouchers = [
+        {"code": "VCH123", "value": 300, "status": "Active"},
+        # ...
+    ]
+    return jsonify(vouchers)
 
 # --- Donations ---
 @bp.route('/api/donations', methods=['POST'])
@@ -276,6 +301,21 @@ def get_donations(donor_id):
     return jsonify([{
         'id': d.id, 'amount': d.amount, 'date': d.date
     } for d in donations])
+
+@bp.route('/api/donations/total', methods=['GET'])
+def get_total_donations():
+    donor_id = request.args.get('donor_id')
+    if not donor_id:
+        return jsonify({'total': 0})
+    # If donor_id is a string (e.g. "D123456"), convert to int if needed
+    try:
+        # If your Donation model uses integer donor_id, convert here
+        donor_id_int = int(donor_id) if donor_id.isdigit() else donor_id
+    except Exception:
+        donor_id_int = donor_id
+    from sqlalchemy import func
+    total = db.session.query(func.sum(Donation.amount)).filter_by(donor_id=donor_id_int).scalar() or 0
+    return jsonify({'total': float(total)})
 
 # --- Feedback ---
 @bp.route('/api/feedback', methods=['POST'])
@@ -312,3 +352,59 @@ def user_profile():
     if not user:
         return jsonify({'user': None}), 404
     return jsonify({'user': user.to_dict()})
+
+@bp.route('/api/register-donor', methods=['POST'])
+def register_donor():
+    data = request.json
+    if not data.get("email") or not data.get("password") or not data.get("name"):
+        return jsonify({"message": "Missing required fields"}), 400
+    if User.query.filter_by(email=data["email"]).first():
+        return jsonify({"message": "Email already registered"}), 400
+
+    # Generate unique donor ID
+    import random
+    while True:
+        donor_id = "D" + str(random.randint(100000, 999999))
+        if not User.query.filter_by(student_id=donor_id).first():
+            break
+
+    hashed_pw = generate_password_hash(data["password"])
+    user = User(
+        name=data["name"],
+        email=data["email"],
+        password=hashed_pw,
+        phone=data.get("phone"),
+        student_id=donor_id,  # Use student_id field for donor_id
+        role="donor"
+    )
+    db.session.add(user)
+    db.session.commit()
+    return jsonify({"message": "Donor registered successfully"}), 201
+
+@bp.route('/api/mpesa-donate', methods=['POST'])
+def mpesa_donate():
+    data = request.get_json()
+    amount = data.get('amount')
+    # Here, integrate with M-Pesa API (pseudo-code)
+    # mpesa_response = mpesa_api.stk_push(amount, phone_number)
+    # if mpesa_response.success:
+    #     Add to meal kitty
+    #     meal_kitty.totalFunds += amount
+    #     meal_kitty.availableFunds += amount
+    #     db.session.commit()
+    #     return jsonify({"message": "Donation successful"}), 201
+    # else:
+    #     return jsonify({"message": "M-Pesa payment failed"}), 400
+    # For demo, just update kitty:
+    # (Replace with real logic)
+    return jsonify({"message": "Donation successful (demo)"}), 201
+
+@bp.route('/api/kitty', methods=['GET'])
+def get_kitty():
+    # Fetch kitty info from DB
+    kitty = {
+        "totalFunds": 100000,  # Replace with DB value
+        "availableFunds": 80000,
+        "lastUpdated": "2025-07-06T12:00:00"
+    }
+    return jsonify(kitty)

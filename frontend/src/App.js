@@ -14,8 +14,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 import theme from "./theme";
 import Footer from "./components/Footer";
 import AdminDashboard from "./components/AdminDashboard";
-import CafeteriaDashboard from "./components/CafeteriaDashboard";
-import DonorDashboard from "./components/DonorDashboard";
 import Logout from "./pages/Logout";
 import ForgotPassword from "./pages/ForgotPassword";
 import Support from "./pages/Support";
@@ -109,7 +107,7 @@ function App() {
             path="/cafeteria"
             element={
               <ProtectedRoute>
-                <CafeteriaDashboard />
+                <Cafeteria /> {/* <-- Use the full-featured Cafeteria page */}
               </ProtectedRoute>
             }
           />
@@ -117,7 +115,7 @@ function App() {
             path="/donor"
             element={
               <ProtectedRoute>
-                <DonorDashboard />
+                <Donor />
               </ProtectedRoute>
             }
           />

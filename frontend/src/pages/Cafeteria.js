@@ -1,41 +1,138 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react"; // removed useEffect
 import Navbar from "../components/Navbar";
 import {
   Box,
   Typography,
   Paper,
-  Grid,
+  TextField,
   Button,
   Avatar,
-  TextField,
+  IconButton,
+  InputAdornment,
   Container,
+  Grid,
 } from "@mui/material";
-import CoffeeIcon from "@mui/icons-material/LocalCafe";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import PeopleIcon from "@mui/icons-material/People";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import { Edit as EditIcon, Save as SaveIcon, Visibility, VisibilityOff } from "@mui/icons-material";
+import SearchIcon from "@mui/icons-material/Search";
+import SettingsIcon from "@mui/icons-material/Settings";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
-import SearchIcon from "@mui/icons-material/Search";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import SettingsIcon from "@mui/icons-material/Settings";
-import BarChartIcon from "@mui/icons-material/BarChart";
+
+function CashierProfileSection() {
+  const [editMode, setEditMode] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [profile, setProfile] = useState({
+    name: localStorage.getItem("cashierName") || "",
+    email: localStorage.getItem("cashierEmail") || "",
+    password: localStorage.getItem("cashierPassword") || "",
+    id: localStorage.getItem("cashierId") || "",
+  });
+
+  const handleChange = (e) => setProfile({ ...profile, [e.target.name]: e.target.value });
+
+  const handleSave = () => {
+    setEditMode(false);
+    localStorage.setItem("cashierName", profile.name);
+    localStorage.setItem("cashierEmail", profile.email);
+    localStorage.setItem("cashierPassword", profile.password);
+
+    // Also update in the cafeteria object in localStorage
+    const cafeteriaId = localStorage.getItem("cafeteriaId");
+    const cafeteriaKey = `cafeteria_${cafeteriaId}`;
+    const cafeteriaObj = JSON.parse(localStorage.getItem(cafeteriaKey));
+    if (cafeteriaObj) {
+      cafeteriaObj.cashierName = profile.name;
+      cafeteriaObj.cashierEmail = profile.email;
+      cafeteriaObj.cashierPassword = profile.password;
+      localStorage.setItem(cafeteriaKey, JSON.stringify(cafeteriaObj));
+    }
+  };
+
+  return (
+    <Paper sx={{ p: 4, borderRadius: 4, mb: 4 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+        Cashier Profile
+      </Typography>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 3, mb: 2 }}>
+        <Avatar sx={{ bgcolor: "#1976d2", width: 56, height: 56 }}>
+          {profile.name ? profile.name[0].toUpperCase() : "C"}
+        </Avatar>
+        <Box sx={{ flex: 1 }}>
+          <TextField
+            label="Name"
+            name="name"
+            value={profile.name}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            disabled={!editMode}
+          />
+          <TextField
+            label="Email"
+            name="email"
+            value={profile.email}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            disabled={!editMode}
+          />
+          <TextField
+            label="Password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            value={profile.password}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            disabled={!editMode}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowPassword((show) => !show)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+          {/* Cashier ID is not shown */}
+        </Box>
+        <Box>
+          {editMode ? (
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<SaveIcon />}
+              onClick={handleSave}
+              sx={{ mb: 2 }}
+            >
+              Save
+            </Button>
+          ) : (
+            <Button
+              variant="outlined"
+              startIcon={<EditIcon />}
+              onClick={() => setEditMode(true)}
+              sx={{ mb: 2 }}
+            >
+              Edit
+            </Button>
+          )}
+        </Box>
+      </Box>
+    </Paper>
+  );
+}
 
 export default function Cafeteria() {
-  // Fetch cafeterias from localStorage
-  const [cafeterias, setCafeterias] = useState([]);
-
-  useEffect(() => {
-    // Get all keys that start with 'cafeteria_'
-    const cafeteriaKeys = Object.keys(localStorage).filter((k) =>
-      k.startsWith("cafeteria_")
-    );
-    const cafeteriaList = cafeteriaKeys.map((k) =>
-      JSON.parse(localStorage.getItem(k))
-    );
-    setCafeterias(cafeteriaList);
-  }, []);
-
   const [scanInput, setScanInput] = useState("");
   const [scanResult, setScanResult] = useState(null);
 
@@ -45,7 +142,7 @@ export default function Cafeteria() {
     title,
     value,
     icon,
-    color = "#1976d2",
+    color = "#e0e7ef",
     gradient = false,
   }) => (
     <Paper
@@ -54,37 +151,21 @@ export default function Cafeteria() {
         borderRadius: 3,
         textAlign: "center",
         background: gradient
-          ? "linear-gradient(135deg, #1976d2 0%, #2dd4bf 100%)"
+          ? "linear-gradient(135deg, #e0e7ef 0%, #f8fafc 100%)"
           : "#fff",
-        color: gradient ? "#fff" : "#222",
-        boxShadow: 3,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+        transition: "transform 0.15s cubic-bezier(.4,2,.6,1), box-shadow 0.15s",
+        cursor: "pointer",
+        "&:hover, &:active": {
+          transform: "scale(1.05)",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+        },
+        userSelect: "none",
       }}
     >
       <Avatar
         sx={{
-          bgcolor: gradient ? "rgba(255,255,255,0.15)" : color,
-          width: 48,
-          height: 48,
-          mx: "auto",
-          mb: 1,
-        }}
-      >
-        {icon}
-      </Avatar>
-      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-        {value}
-      </Typography>
-      <Typography sx={{ color: gradient ? "#e0f2f1" : "#666" }}>
-        {title}
-      </Typography>
-    </Paper>
-  );
-
-  const EmptyState = ({ icon, title, description, actionText }) => (
-    <Box sx={{ textAlign: "center", py: 6 }}>
-      <Avatar
-        sx={{
-          bgcolor: "#e0e7ef",
+          bgcolor: color,
           width: 64,
           height: 64,
           mx: "auto",
@@ -96,32 +177,33 @@ export default function Cafeteria() {
       <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
         {title}
       </Typography>
-      <Typography sx={{ color: "#666", mb: 2 }}>{description}</Typography>
-      {actionText && (
-        <Button variant="contained" sx={{ bgcolor: "#1976d2" }}>
-          {actionText}
-        </Button>
-      )}
-    </Box>
+      <Typography sx={{ color: "#666", mb: 2 }}>{value}</Typography>
+    </Paper>
   );
 
-  const scanVoucher = () => {
+  const scanVoucher = async () => {
     if (!scanInput.trim()) {
-      setScanResult({
-        type: "error",
-        message: "Please enter a voucher ID to scan",
-      });
+      setScanResult({ type: "error", message: "Please enter a voucher ID to scan" });
       return;
     }
-    setScanResult({
-      type: "info",
-      message:
-        "No vouchers in system yet. Start by allocating vouchers to students.",
+    const res = await fetch("http://localhost:5000/api/vouchers/use", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: scanInput }),
     });
+    const data = await res.json();
+    if (res.ok) {
+      setScanResult({ type: "success", message: "Voucher redeemed successfully!" });
+    } else {
+      setScanResult({ type: "error", message: data.message || "Invalid voucher." });
+    }
   };
 
-  // Only render the cafeteria dashboard if the user is a cafeteria
-  if (cafeterias.length === 0) {
+  // Get cashier name for header
+  const cashierName = localStorage.getItem("cashierName") || "Cashier";
+
+  // Only render the cafeteria dashboard if the user is a cashier
+  if (!localStorage.getItem("userType") || localStorage.getItem("userType") !== "cashier") {
     return (
       <Box
         sx={{
@@ -139,17 +221,8 @@ export default function Cafeteria() {
           Access Denied
         </Typography>
         <Typography sx={{ color: "#666", mb: 4, textAlign: "center" }}>
-          This dashboard is restricted to registered cafeterias only. If you are
-          a cafeteria owner, please register your cafeteria to access this
-          dashboard.
+          This dashboard is restricted to registered cashiers only. Please log in as a cashier to access this dashboard.
         </Typography>
-        <Button
-          variant="contained"
-          sx={{ bgcolor: "#1976d2", px: 4, py: 1.5, borderRadius: 2 }}
-          onClick={() => window.location.href = '/register'}
-        >
-          Register Cafeteria
-        </Button>
       </Box>
     );
   }
@@ -169,69 +242,9 @@ export default function Cafeteria() {
           {/* Header */}
           <Paper sx={{ p: 4, mb: 4, borderRadius: 4 }}>
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>
-              Registered Cafeterias
+              Welcome, {cashierName}
             </Typography>
-            {cafeterias.length === 0 ? (
-              <Box sx={{ textAlign: "center", py: 6 }}>
-                <Avatar
-                  sx={{
-                    bgcolor: "#e0e7ef",
-                    width: 64,
-                    height: 64,
-                    mx: "auto",
-                    mb: 2,
-                  }}
-                >
-                  <CoffeeIcon sx={{ fontSize: 40, color: "#1976d2" }} />
-                </Avatar>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                  No Cafeterias Registered
-                </Typography>
-                <Typography sx={{ color: "#666", mb: 2 }}>
-                  Cafeterias will appear here once they are registered in the
-                  system.
-                </Typography>
-              </Box>
-            ) : (
-              <Grid container spacing={3}>
-                {cafeterias.map((caf, idx) => (
-                  <Grid
-                    item
-                    xs={12}
-                    md={6}
-                    lg={4}
-                    key={caf.cafeteriaId || idx}
-                  >
-                    <Paper sx={{ p: 3, borderRadius: 3, mb: 2 }}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 2,
-                        }}
-                      >
-                        <Avatar
-                          sx={{ bgcolor: "#1976d2", width: 56, height: 56 }}
-                        >
-                          <CoffeeIcon />
-                        </Avatar>
-                        <Box>
-                          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                            {caf.name}
-                          </Typography>
-                          <Typography sx={{ color: "#1976d2" }}>
-                            📍 {caf.location}
-                          </Typography>
-                          <Typography sx={{ color: "#888", fontSize: 14 }}>
-                            ID: {caf.cafeteriaId}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Paper>
-                  </Grid>
-                ))}
-              </Grid>
-            )}
+            {/* No cafeteria ID or list shown */}
           </Paper>
 
           {/* Stats Grid */}
@@ -240,8 +253,10 @@ export default function Cafeteria() {
               <StatCard
                 title="Total Transactions"
                 value="0"
-                icon={<BarChartIcon />}
-                color="#16a34a"
+                icon={
+                  <BarChartIcon sx={{ fontSize: 48, color: "#16a34a", filter: "drop-shadow(0 2px 6px #16a34a44)" }} />
+                }
+                color="#e8f5e9" // light green background
                 gradient
               />
             </Grid>
@@ -249,24 +264,30 @@ export default function Cafeteria() {
               <StatCard
                 title="Active Vouchers"
                 value="0"
-                icon={<CreditCardIcon />}
-                color="#1976d2"
+                icon={
+                  <CreditCardIcon sx={{ fontSize: 48, color: "#1976d2", filter: "drop-shadow(0 2px 6px #1976d244)" }} />
+                }
+                color="#e3f2fd" // light blue background
               />
             </Grid>
             <Grid item xs={12} md={3}>
               <StatCard
                 title="Today's Revenue"
                 value={formatCurrency(0)}
-                icon={<TrendingUpIcon />}
-                color="#a21caf"
+                icon={
+                  <TrendingUpIcon sx={{ fontSize: 48, color: "#a21caf", filter: "drop-shadow(0 2px 6px #a21caf44)" }} />
+                }
+                color="#f3e8fd" // light purple background
               />
             </Grid>
             <Grid item xs={12} md={3}>
               <StatCard
                 title="Students Served"
                 value="0"
-                icon={<PeopleIcon />}
-                color="#f59e42"
+                icon={
+                  <PeopleIcon sx={{ fontSize: 48, color: "#f59e42", filter: "drop-shadow(0 2px 6px #f59e4244)" }} />
+                }
+                color="#fff7ed" // light orange background
               />
             </Grid>
           </Grid>
@@ -422,11 +443,7 @@ export default function Cafeteria() {
                   <Typography sx={{ fontWeight: 600, mb: 1 }}>
                     Today's Activity
                   </Typography>
-                  <EmptyState
-                    icon={<AccessTimeIcon />}
-                    title="No Activity Yet"
-                    description="Transactions will appear here once students start using their vouchers."
-                  />
+                  {/* ... */}
                 </Box>
                 <Box sx={{ borderTop: "1px solid #e0e7ef", pt: 3 }}>
                   <Typography sx={{ fontWeight: 600, mb: 1 }}>Quick Stats</Typography>
@@ -586,6 +603,10 @@ export default function Cafeteria() {
               </Box>
             </Box>
           </Paper>
+
+          {/* Cashier Profile Section */}
+          <CashierProfileSection />
+
         </Container>
       </Box>
     </>

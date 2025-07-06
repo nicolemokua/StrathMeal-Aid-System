@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const [profile, setProfile] = useState(null);
+  const [vouchers, setVouchers] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,6 +37,14 @@ export default function Dashboard() {
 
     fetchProfile();
   }, [navigate]);
+
+  useEffect(() => {
+    if (profile) {
+      fetch(`http://localhost:5000/api/vouchers/${profile.studentId}`)
+        .then(res => res.json())
+        .then(data => setVouchers(data));
+    }
+  }, [profile]);
 
   if (!profile) {
     return (
@@ -139,7 +148,7 @@ export default function Dashboard() {
               >
                 <CreditCardIcon sx={{ fontSize: 40, color: "#16a34a" }} />
                 <Typography variant="h6" sx={{ mt: 1, fontWeight: 700 }}>
-                  0
+                  {vouchers.length}
                 </Typography>
                 <Typography sx={{ color: "#666" }}>Active Vouchers</Typography>
               </Paper>
