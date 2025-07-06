@@ -1,4 +1,4 @@
-from __init__ import create_app, db
+from backend import create_app, db
 from models import User
 
 app = create_app()

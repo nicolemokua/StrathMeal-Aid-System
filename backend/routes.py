@@ -49,6 +49,7 @@ def login():
         return jsonify({
             'message': 'Login successful',
             'access_token': access_token,
+            'userType': user.role,  # <-- Add this line
             'user': {
                 'id': user.id,
                 'name': user.name,
