@@ -102,7 +102,6 @@ function Login() {
       }
       // Check eligibility after login for students
       if (data.userType === "student") {
-        // Fetch eligibility from backend
         try {
           const eligibilityRes = await fetch("http://localhost:5000/api/application-eligibility", {
             headers: {
@@ -111,20 +110,17 @@ function Login() {
             },
           });
           const eligibilityData = await eligibilityRes.json();
-          if (
-            eligibilityData.eligible ||
-            eligibilityData.last_status === "Approved"
-          ) {
+          if (eligibilityData.last_status === "Approved") {
             localStorage.setItem("studentEligible", "true");
             navigate("/student");
           } else {
+            // Not approved or not applied: go to homepage
             localStorage.setItem("studentEligible", "false");
-            navigate("/"); // Not eligible yet, go to homepage
+            navigate("/home");
           }
         } catch {
-          // If eligibility check fails, treat as not eligible
           localStorage.setItem("studentEligible", "false");
-          navigate("/");
+          navigate("/home");
         }
       } else if (data.userType === "donor") {
         navigate("/donor");

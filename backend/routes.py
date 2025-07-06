@@ -241,7 +241,13 @@ def application_eligibility():
                     "last_status": "Rejected",
                     "remarks": last_app.remarks or ""
                 })
-    return jsonify({"eligible": True})
+    # If no application for this semester
+    return jsonify({
+        "eligible": True,
+        "reason": "You have not applied for this semester.",
+        "last_status": None,
+        "remarks": ""
+    })
 
 # --- Vouchers ---
 @bp.route('/api/vouchers/<int:user_id>', methods=['GET'])
@@ -353,6 +359,7 @@ def user_profile():
         return jsonify({'user': None}), 404
     return jsonify({'user': user.to_dict()})
 
+<<<<<<< HEAD
 @bp.route('/api/register-donor', methods=['POST'])
 def register_donor():
     data = request.json
@@ -408,3 +415,16 @@ def get_kitty():
         "lastUpdated": "2025-07-06T12:00:00"
     }
     return jsonify(kitty)
+=======
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
+@bp.route('/api/student-dashboard', methods=['GET'])
+@jwt_required()
+def student_dashboard():
+    user_email = get_jwt_identity()
+    user = User.query.filter_by(email=user_email).first()
+    last_app = Application.query.filter_by(user_id=user.id).order_by(Application.id.desc()).first()
+    if not last_app or last_app.status != "Approved":
+        return jsonify({"error": "Not authorized"}), 403
+    # ...return dashboard data...
+>>>>>>> cfa86374f99fdcc5ca4ca395d0b6644b3fe7a054
