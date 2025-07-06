@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Button, Container, TextField, Typography, Paper, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 function Register() {
   const [form, setForm] = useState({
@@ -14,6 +16,7 @@ function Register() {
     year_of_study: "",
   });
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -33,7 +36,11 @@ function Register() {
         return;
       }
       localStorage.setItem("userLoggedIn", "true");
-      navigate("/login"); 
+      localStorage.setItem("studentEligible", "false");
+      localStorage.setItem("studentEmail", form.email);
+      localStorage.setItem("userEmail", form.email);
+      // Redirect to homepage to prompt application
+      navigate("/"); 
     } catch (err) {
       setError("Network error");
     }
@@ -76,7 +83,27 @@ function Register() {
               <TextField label="Name" name="name" fullWidth margin="normal" required value={form.name} onChange={handleChange} />
               <TextField label="Student ID" name="student_id" fullWidth margin="normal" required value={form.student_id} onChange={handleChange} />
               <TextField label="Email" name="email" type="email" fullWidth margin="normal" required value={form.email} onChange={handleChange} />
-              <TextField label="Password" name="password" type="password" fullWidth margin="normal" required value={form.password} onChange={handleChange} />
+              <TextField 
+                label="Password" 
+                name="password" 
+                type={showPassword ? "text" : "password"} 
+                fullWidth 
+                margin="normal" 
+                required 
+                value={form.password} 
+                onChange={handleChange} 
+                InputProps={{
+                  endAdornment: (
+                    <Button
+                      onClick={() => setShowPassword((v) => !v)}
+                      tabIndex={-1}
+                      sx={{ minWidth: 0, p: 0, color: "#888" }}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </Button>
+                  ),
+                }}
+              />
               <TextField label="Phone" name="phone" fullWidth margin="normal" value={form.phone} onChange={handleChange} />
               <TextField label="Course" name="course" fullWidth margin="normal" value={form.course} onChange={handleChange} />
               <TextField label="Year of Study" name="year_of_study" type="number" fullWidth margin="normal" value={form.year_of_study} onChange={handleChange} />

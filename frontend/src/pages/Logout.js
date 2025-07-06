@@ -7,6 +7,8 @@ function Logout() {
   useEffect(() => {
     // Remove login flag
     localStorage.removeItem("userLoggedIn");
+    localStorage.removeItem("studentEmail");
+    localStorage.removeItem("userEmail");
     // Redirect to login page immediately
     navigate("/login", { replace: true });
   }, [navigate]);

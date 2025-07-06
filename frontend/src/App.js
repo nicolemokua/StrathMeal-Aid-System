@@ -18,7 +18,7 @@ import CafeteriaDashboard from "./components/CafeteriaDashboard";
 import DonorDashboard from "./components/DonorDashboard";
 import Logout from "./pages/Logout";
 import ForgotPassword from "./pages/ForgotPassword";
-import Support from "./pages/support";
+import Support from "./pages/Support";
 import AboutUs from "./pages/AboutUs";
 import Student from "./pages/Student";
 import Admin from "./pages/Admin";
@@ -127,6 +127,14 @@ function App() {
           <Route path="/register/donor" element={<RegisterDonor />} />
           <Route path="/register/cafeteria" element={<RegisterCafeteria />} />
           <Route path="/admin-login" element={<AdminLogin />} />
+          <Route
+            path="/student"
+            element={
+              <ProtectedRoute>
+                <Student />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />

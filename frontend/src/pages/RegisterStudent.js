@@ -217,6 +217,7 @@ export default function RegisterStudent() {
       if (!res.ok) {
         setError(data.message || "Application failed");
         setIsSubmitting(false);
+        localStorage.setItem("studentEligible", "false"); // Not eligible if failed
         return;
       }
       setIsSubmitting(false);
@@ -225,9 +226,15 @@ export default function RegisterStudent() {
         status: data.status,
         remarks: data.remarks,
       });
+      if (data.status === "Approved") {
+        localStorage.setItem("studentEligible", "true");
+      } else {
+        localStorage.setItem("studentEligible", "false");
+      }
     } catch (err) {
       setError("Network error");
       setIsSubmitting(false);
+      localStorage.setItem("studentEligible", "false");
     }
   };
 
@@ -374,8 +381,23 @@ export default function RegisterStudent() {
           <Typography sx={{ color: "#666", mb: 3 }}>
             {applicationResult.remarks}
           </Typography>
+          {applicationResult.status === "Approved" && (
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ mb: 2 }}
+              onClick={() => {
+                // Set a flag in localStorage to indicate eligibility
+                localStorage.setItem("studentEligible", "true");
+                window.location.href = "/student";
+              }}
+            >
+              Go to Dashboard
+            </Button>
+          )}
           <Button
-            variant="contained"
+            variant="outlined"
             color="primary"
             fullWidth
             onClick={() => {

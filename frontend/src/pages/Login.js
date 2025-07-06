@@ -10,7 +10,7 @@ function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // FIXED: useState for isLoading
   const navigate = useNavigate();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -19,7 +19,7 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
+    setIsLoading(true); // Start loading
     try {
       const res = await fetch("http://localhost:5000/api/login", {
         method: "POST",
@@ -33,30 +33,57 @@ function Login() {
         return;
       }
       localStorage.setItem("userLoggedIn", "true");
-      localStorage.setItem("userType", data.user.role);
-      localStorage.setItem("userRole", data.user.role); 
-      // After successful login
-      localStorage.setItem("accessToken", data.access_token);
-      // Determine user type and redirect accordingly
-      if (data.user && data.user.role === "student") {
+      // Always set the correct email from backend response
+      if (data.user && data.user.email) {
         localStorage.setItem("studentEmail", data.user.email);
         localStorage.setItem("userEmail", data.user.email);
-        localStorage.setItem("userType", data.user.role);
-        localStorage.setItem("userRole", data.user.role);
-        navigate("/home");
-      } else if (data.user && data.user.role === "admin") {
-        navigate("/dashboard/admin");
-      } else if (data.user && data.user.role === "donor") {
-        navigate("/dashboard/donor");
-      } else if (data.user && data.user.role === "cafeteria") {
-        navigate("/dashboard/cafeteria");
       } else {
-        navigate("/notfound");
+        localStorage.setItem("studentEmail", form.email);
+        localStorage.setItem("userEmail", form.email);
+      }
+      if (data.access_token) {
+        localStorage.setItem("accessToken", data.access_token);
+      }
+      if (data.userType) {
+        localStorage.setItem("userType", data.userType);
+      }
+      // Check eligibility after login for students
+      if (data.userType === "student") {
+        // Fetch eligibility from backend
+        try {
+          const eligibilityRes = await fetch("http://localhost:5000/api/application-eligibility", {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${data.access_token}`,
+            },
+          });
+          const eligibilityData = await eligibilityRes.json();
+          if (
+            eligibilityData.eligible ||
+            eligibilityData.last_status === "Approved"
+          ) {
+            localStorage.setItem("studentEligible", "true");
+            navigate("/student");
+          } else {
+            localStorage.setItem("studentEligible", "false");
+            navigate("/"); // Not eligible yet, go to homepage
+          }
+        } catch {
+          // If eligibility check fails, treat as not eligible
+          localStorage.setItem("studentEligible", "false");
+          navigate("/");
+        }
+      } else if (data.userType === "donor") {
+        navigate("/donor");
+      } else if (data.userType === "cafeteria") {
+        navigate("/cafeteria");
+      } else {
+        navigate("/");
       }
     } catch (err) {
       setError("Network error");
     }
-    setIsLoading(false);
+    setIsLoading(false); // End loading
   };
 
   return (
