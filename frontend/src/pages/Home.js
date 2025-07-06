@@ -51,16 +51,6 @@ export default function Home() {
               variant="contained"
               color="primary"
               size="large"
-              sx={{
-                borderRadius: 8,
-                fontWeight: 700,
-                px: 5,
-                py: 1.5,
-                background: "linear-gradient(90deg, #134e4a 0%, #2dd4bf 100%)",
-                color: "#fff",
-                boxShadow: 3,
-                ":hover": { background: "linear-gradient(90deg, #0f766e 0%, #2dd4bf 100%)" },
-              }}
               href="/register/student"
             >
               Join StrathMeal Aid

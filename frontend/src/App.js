@@ -35,6 +35,16 @@ function ProtectedRoute({ children }) {
   return isAuthenticated() ? children : <Navigate to="/login" replace />;
 }
 
+function StudentProtectedRoute({ children }) {
+  const isLoggedIn = !!localStorage.getItem("userLoggedIn");
+  const userType = localStorage.getItem("userType");
+  const studentEligible = localStorage.getItem("studentEligible") === "true";
+  if (!isLoggedIn || userType !== "student" || !studentEligible) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+}
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
@@ -130,9 +140,9 @@ function App() {
           <Route
             path="/student"
             element={
-              <ProtectedRoute>
+              <StudentProtectedRoute>
                 <Student />
-              </ProtectedRoute>
+              </StudentProtectedRoute>
             }
           />
           <Route path="*" element={<NotFound />} />

@@ -269,7 +269,8 @@ export default function RegisterStudent() {
     );
   }
 
-  if (!eligibility.eligible) {
+  if (!eligibility.eligible && eligibility.last_status !== null) {
+    // Show status if not eligible and there is a last_status (Pending, Approved, Rejected)
     return (
       <Box
         sx={{
