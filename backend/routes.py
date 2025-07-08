@@ -359,7 +359,6 @@ def user_profile():
         return jsonify({'user': None}), 404
     return jsonify({'user': user.to_dict()})
 
-<<<<<<< HEAD
 @bp.route('/api/register-donor', methods=['POST'])
 def register_donor():
     data = request.json
@@ -415,8 +414,6 @@ def get_kitty():
         "lastUpdated": "2025-07-06T12:00:00"
     }
     return jsonify(kitty)
-=======
-from flask_jwt_extended import jwt_required, get_jwt_identity
 
 @bp.route('/api/student-dashboard', methods=['GET'])
 @jwt_required()
@@ -427,4 +424,3 @@ def student_dashboard():
     if not last_app or last_app.status != "Approved":
         return jsonify({"error": "Not authorized"}), 403
     # ...return dashboard data...
->>>>>>> cfa86374f99fdcc5ca4ca395d0b6644b3fe7a054
