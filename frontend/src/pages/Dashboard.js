@@ -118,20 +118,7 @@ export default function Dashboard() {
                   {profile.course} - Year{" "}
                   {profile.year_of_study || profile.yearOfStudy}
                 </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    mt: 1,
-                  }}
-                >
-                  <AccessTimeIcon
-                    sx={{ fontSize: 18, color: "#f59e42", mr: 0.5 }}
-                  />
-                  <Typography sx={{ fontSize: 14, color: "#f59e42" }}>
-                    Profile Under Review
-                  </Typography>
-                </Box>
+                
               </Box>
             </Box>
           </Paper>
@@ -198,9 +185,7 @@ export default function Dashboard() {
             <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
               My Meal Vouchers
             </Typography>
-            <Typography sx={{ color: "#666", mb: 3 }}>
-              Your meal vouchers will appear here once your profile is approved.
-            </Typography>
+            
             <Grid container spacing={2} justifyContent="center">
               <Grid item xs={12} md={6}>
                 <Paper

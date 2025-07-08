@@ -6,11 +6,18 @@ import LockIcon from "@mui/icons-material/Lock";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
+function validatePassword(password) {
+  // Example: at least 3 numbers and at most 1 symbol
+  const numbers = password.replace(/[^0-9]/g, "").length;
+  const symbols = password.replace(/[A-Za-z0-9]/g, "").length;
+  return numbers >= 3 && symbols <= 1;
+}
+
 function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // FIXED: useState for isLoading
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -19,6 +26,18 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    // Email validation
+    if (form.email.length > 200) {
+      setError("Email must not exceed 200 characters.");
+      return;
+    }
+    // Password validation
+    if (!validatePassword(form.password)) {
+      setError("Invalid. Password must include at least 3 numbers and at most a symbol.");
+      return;
+    }
+
     setIsLoading(true);
     try {
       // Try to login as cashier (localStorage check)

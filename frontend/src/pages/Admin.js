@@ -4,7 +4,6 @@ import { Box, Typography, Paper, Grid, Button, Dialog, DialogTitle, DialogConten
 import PeopleIcon from "@mui/icons-material/People";
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import SettingsIcon from "@mui/icons-material/Settings";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
@@ -247,9 +246,6 @@ export default function Admin() {
                 </Grid>
                 <Grid item xs={12} md={3}>
                   <StatCard title="Active Vouchers" value="0" icon={<CreditCardIcon />} color="#16a34a" subtitle="Currently available" />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                  <StatCard title="Pending Applications" value="0" icon={<AccessTimeIcon />} color="#f59e42" subtitle="Awaiting approval" />
                 </Grid>
                 <Grid item xs={12} md={3}>
                   <StatCard title="Available Funds" value={formatCurrency(mealKitty.availableFunds)} icon={<AttachMoneyIcon />} color="#a21caf" subtitle="In meal fund" />

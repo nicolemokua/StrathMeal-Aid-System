@@ -79,7 +79,6 @@ export default function AboutUs() {
                 <ul style={{ textAlign: "left", margin: "16px auto 24px", maxWidth: 600, color: "#134e4a", fontWeight: 500 }}>
                   <li>Confidential, stigma-free meal support for all students in need.</li>
                   <li>Easy online requests and fast voucher distribution.</li>
-                  <li>Multiple campus pickup points for convenience and privacy.</li>
                   <li>Community-driven: built by students, for students.</li>
                   <li>Secure, transparent, and always respectful of your dignity.</li>
                 </ul>
