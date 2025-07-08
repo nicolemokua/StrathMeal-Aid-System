@@ -1,15 +1,13 @@
-from . import db
+from backend import db
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.String(32), unique=True, nullable=True)  # <-- Add this line
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(128), nullable=False)
+    password = db.Column(db.String(200), nullable=False)
     phone = db.Column(db.String(20))
-    course = db.Column(db.String(120))
-    year_of_study = db.Column(db.Integer)
-    role = db.Column(db.String(20), default="student")  # student, donor, admin, cafeteria
+    student_id = db.Column(db.String(20), unique=True)  # Used for donor_id too
+    role = db.Column(db.String(20), default="student")  # "student", "donor", "cafeteria"
 
     applications = db.relationship('Application', backref='user', lazy=True)
     vouchers = db.relationship('Voucher', backref='user', lazy=True)

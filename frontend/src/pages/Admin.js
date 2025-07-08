@@ -31,6 +31,13 @@ export default function Admin() {
     lastUpdated: new Date().toISOString(),
   });
 
+  // Fetch meal kitty info from backend
+  useEffect(() => {
+    fetch("http://localhost:5000/api/kitty")
+      .then(res => res.json())
+      .then(data => setMealKitty(data));
+  }, []);
+
   const [applications, setApplications] = useState([]);
   const [loadingApps, setLoadingApps] = useState(false);
   const [error, setError] = useState(""); // Add this state
@@ -126,6 +133,16 @@ export default function Admin() {
     }));
     setShowKittyModal(false);
   };
+
+  //const handleGenerateVouchers = async (studentIds, voucherValue, count) => {
+  //  const res = await fetch("http://localhost:5000/api/vouchers", {
+  //    method: "POST",
+  //    headers: { "Content-Type": "application/json" },
+  //    body: JSON.stringify({ studentIds, voucherValue, count }),
+  //  });
+  //  const data = await res.json();
+    // Show success/error message
+  //};
 
   // Only render the admin dashboard if the user is an admin
   const userRole = localStorage.getItem("userRole"); // Assuming user role is stored in localStorage

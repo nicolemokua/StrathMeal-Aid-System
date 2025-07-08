@@ -1,4 +1,14 @@
-from backend import create_app, db
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
+
+def create_app():
+    app = Flask(__name__)
+    # ...existing config...
+    db.init_app(app)
+    return app
+
 from models import User
 
 app = create_app()

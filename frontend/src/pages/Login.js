@@ -40,6 +40,54 @@ function Login() {
 
     setIsLoading(true);
     try {
+      // Try to login as cashier (localStorage check)
+      const cafeteriaKeys = Object.keys(localStorage).filter((k) =>
+        k.startsWith("cafeteria_")
+      );
+      let foundCashier = null;
+      for (let i = 0; i < cafeteriaKeys.length; i++) {
+        const caf = JSON.parse(localStorage.getItem(cafeteriaKeys[i]));
+        if (
+          caf &&
+          caf.cashierEmail === form.email &&
+          caf.cashierPassword === form.password
+        ) {
+          foundCashier = caf;
+          break;
+        }
+      }
+      if (foundCashier) {
+        localStorage.setItem("userLoggedIn", "true");
+        localStorage.setItem("userType", "cashier");
+        localStorage.setItem("cashierId", foundCashier.cashierId);
+        localStorage.setItem("cashierName", foundCashier.cashierName);
+        localStorage.setItem("cashierEmail", foundCashier.cashierEmail);
+        localStorage.setItem("cafeteriaId", foundCashier.cafeteriaId || foundCashier.cafeteriaId);
+        localStorage.setItem("cafeteriaName", foundCashier.name);
+        localStorage.setItem("cafeteriaLocation", foundCashier.location);
+        setIsLoading(false);
+        navigate("/cafeteria");
+        return;
+      }
+      // After cashier check, before backend fetch:
+      const donorList = JSON.parse(localStorage.getItem("donors") || "[]");
+      const foundDonor = donorList.find(
+        (donor) =>
+          donor.email === form.email &&
+          donor.password === form.password
+      );
+      if (foundDonor) {
+        localStorage.setItem("userLoggedIn", "true");
+        localStorage.setItem("userType", "donor");
+        localStorage.setItem("donorName", foundDonor.name);
+        localStorage.setItem("donorEmail", foundDonor.email);
+        localStorage.setItem("donorPhone", foundDonor.phone);
+        localStorage.setItem("donorToken", foundDonor.donorId);
+        // Add any other donor info you want to persist
+        setIsLoading(false);
+        navigate("/donor");
+        return;
+      }
       const res = await fetch("http://localhost:5000/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -52,13 +100,18 @@ function Login() {
         return;
       }
       localStorage.setItem("userLoggedIn", "true");
-      // Always set the correct email from backend response
-      if (data.user && data.user.email) {
-        localStorage.setItem("studentEmail", data.user.email);
-        localStorage.setItem("userEmail", data.user.email);
-      } else {
-        localStorage.setItem("studentEmail", form.email);
-        localStorage.setItem("userEmail", form.email);
+      if (data.userType === "donor") {
+        localStorage.setItem("userType", "donor");
+        localStorage.setItem("donorName", data.user.name);
+        localStorage.setItem("donorEmail", data.user.email);
+        localStorage.setItem("donorPhone", data.user.phone || "");
+        localStorage.setItem("donorToken", data.user.donor_id); // Store donor_id as token
+        if (data.access_token) {
+          localStorage.setItem("accessToken", data.access_token);
+        }
+        setIsLoading(false);
+        navigate("/donor");
+        return;
       }
       if (data.access_token) {
         localStorage.setItem("accessToken", data.access_token);

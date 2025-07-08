@@ -8,21 +8,16 @@ function DonationForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
-    // Replace donor_id and date with actual values in a real app
-    const donation = {
-      donor_id: 1,
-      amount: parseFloat(amount),
-      date: new Date().toISOString().slice(0, 10),
-    };
+    // Call your backend to initiate M-Pesa payment
     try {
-      const res = await fetch("http://localhost:5000/api/donations", {
+      const res = await fetch("http://localhost:5000/api/mpesa-donate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(donation),
+        body: JSON.stringify({ amount }),
       });
       const data = await res.json();
-      if (res.status === 201) {
-        setMessage("Thank you for your donation!");
+      if (res.ok) {
+        setMessage("M-Pesa payment initiated. Please complete on your phone.");
       } else {
         setMessage(data.message || "Donation failed.");
       }

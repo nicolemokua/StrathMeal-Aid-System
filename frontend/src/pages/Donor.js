@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import {
   Box,
@@ -12,13 +12,12 @@ import {
   Alert,
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import PeopleIcon from "@mui/icons-material/People";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import PersonIcon from "@mui/icons-material/Person";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber"; // Install framer-motion if not already: npm install framer-motion
 
 export default function Donor() {
   const donorName = localStorage.getItem("donorName") || "Donor";
@@ -31,6 +30,26 @@ export default function Donor() {
   });
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState("");
+  const donorId = localStorage.getItem("donorToken");
+  const [totalDonations, setTotalDonations] = useState(0);
+
+  // Fetch total donations for this donor from backend on mount
+  useEffect(() => {
+    async function fetchTotal() {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/donations/total?donor_id=${donorId}`
+        );
+        const data = await res.json();
+        if (res.ok && typeof data.total === "number") {
+          setTotalDonations(data.total);
+        }
+      } catch (err) {
+        setTotalDonations(0);
+      }
+    }
+    if (donorId) fetchTotal();
+  }, [donorId]);
 
   const handleDonation = (e) => {
     e.preventDefault();
@@ -61,17 +80,22 @@ export default function Donor() {
     }, 3000);
   };
 
-  const stats = [
-    { icon: <PeopleIcon color="primary" />, label: "Students Helped", value: "0" },
-    { icon: <AttachMoneyIcon sx={{ color: "#16a34a" }} />, label: "Total Donations", value: "KSh 0" },
-    { icon: <FavoriteIcon sx={{ color: "#e11d48" }} />, label: "Meals Funded", value: "0" },
-  ];
-
   // Only render the donor dashboard if the user is a donor
   if (!localStorage.getItem("donorToken")) {
     return (
-      <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
-        <Typography variant="h6" sx={{ color: "#333", textAlign: "center" }}>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#f9fafb",
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{ color: "#333", textAlign: "center" }}
+        >
           Access denied. This page is for donors only.
         </Typography>
       </Box>
@@ -81,7 +105,13 @@ export default function Donor() {
   return (
     <>
       <Navbar />
-      <Box sx={{ minHeight: "100vh", background: "linear-gradient(135deg, #e0e7ef 0%, #e0f2f1 100%)", py: 4 }}>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          background: "linear-gradient(135deg, #e0e7ef 0%, #e0f2f1 100%)",
+          py: 4,
+        }}
+      >
         <Container maxWidth="lg">
           {/* Header */}
           <Paper sx={{ p: 3, mb: 4, borderRadius: 3 }}>
@@ -93,72 +123,125 @@ export default function Donor() {
                 <Typography variant="h5" sx={{ fontWeight: 700 }}>
                   Welcome, {donorInfo.name}
                 </Typography>
-                <Typography sx={{ color: "#666" }}>
-                  Help feed hungry students with your donations
-                </Typography>
               </Box>
             </Box>
           </Paper>
 
-          {/* Stats */}
+          {/* Only Total Donations Stat */}
           <Grid container spacing={3} mb={4}>
-            {stats.map((stat, idx) => (
-              <Grid item xs={12} md={4} key={idx}>
-                <Paper sx={{ p: 3, borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <Box>
-                    <Typography sx={{ color: "#666", fontSize: 14 }}>{stat.label}</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>{stat.value}</Typography>
-                  </Box>
-                  <Avatar sx={{ bgcolor: "#f1f5f9", width: 40, height: 40 }}>{stat.icon}</Avatar>
-                </Paper>
-              </Grid>
-            ))}
+            <Grid item xs={12} md={4}>
+              <Paper
+                sx={{
+                  p: 3,
+                  borderRadius: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box>
+                  <Typography sx={{ color: "#666", fontSize: 14 }}>
+                    Total Donations
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    KSh {totalDonations.toLocaleString()}
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: "inline-block",
+                    transition: "transform 0.15s cubic-bezier(.4,2,.6,1)",
+                    cursor: "pointer",
+                    "&:hover, &:active": {
+                      transform: "scale(1.15) rotate(8deg)",
+                    },
+                  }}
+                >
+                  <AttachMoneyIcon sx={{ color: "#16a34a", fontSize: 40 }} />
+                </Box>
+              </Paper>
+            </Grid>
           </Grid>
 
           <Grid container spacing={4}>
             {/* Donation Form */}
             <Grid item xs={12} lg={8}>
               <Paper sx={{ p: 4, borderRadius: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, display: "flex", alignItems: "center", gap: 1 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 700,
+                    mb: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
                   <FavoriteIcon sx={{ color: "#e11d48" }} /> Make a Donation
                 </Typography>
                 {/* Removed voucher breakdown and suggested donations */}
                 {showSuccess && (
-                  <Alert icon={<CheckCircleIcon fontSize="inherit" />} severity="success" sx={{ mb: 2 }}>
+                  <Alert
+                    icon={<CheckCircleIcon fontSize="inherit" />}
+                    severity="success"
+                    sx={{ mb: 2 }}
+                  >
                     Thank you! Your donation has been processed successfully.
                   </Alert>
                 )}
                 <form onSubmit={handleDonation}>
                   <Box sx={{ mb: 3 }}>
-                    <Typography sx={{ fontWeight: 600, mb: 1 }}>Your Information</Typography>
+                    <Typography
+                      sx={{ fontWeight: 600, mb: 1 }}
+                    >
+                      Your Information
+                    </Typography>
                     <Grid container spacing={2}>
                       <Grid item xs={12} md={4}>
                         <TextField
                           label="Full Name"
                           value={donorInfo.name}
-                          onChange={(e) => setDonorInfo({ ...donorInfo, name: e.target.value })}
+                          onChange={(e) =>
+                            setDonorInfo({ ...donorInfo, name: e.target.value })
+                          }
                           fullWidth
                           required
-                          InputProps={{ startAdornment: <PersonIcon sx={{ mr: 1 }} /> }}
+                          InputProps={{
+                            startAdornment: (
+                              <PersonIcon sx={{ mr: 1 }} />
+                            ),
+                          }}
                         />
                       </Grid>
                       <Grid item xs={12} md={4}>
                         <TextField
                           label="Phone Number (M-Pesa)"
                           value={donorInfo.phone}
-                          onChange={(e) => setDonorInfo({ ...donorInfo, phone: e.target.value })}
+                          onChange={(e) =>
+                            setDonorInfo({ ...donorInfo, phone: e.target.value })
+                          }
                           fullWidth
                           required
-                          InputProps={{ startAdornment: <PhoneIcon sx={{ mr: 1 }} /> }}
+                          InputProps={{
+                            startAdornment: (
+                              <PhoneIcon sx={{ mr: 1 }} />
+                            ),
+                          }}
                         />
                       </Grid>
                       <Grid item xs={12} md={4}>
                         <TextField
                           label="Email (Optional)"
                           value={donorInfo.email}
-                          onChange={(e) => setDonorInfo({ ...donorInfo, email: e.target.value })}
+                          onChange={(e) =>
+                            setDonorInfo({ ...donorInfo, email: e.target.value })
+                          }
                           fullWidth
-                          InputProps={{ startAdornment: <EmailIcon sx={{ mr: 1 }} /> }}
+                          InputProps={{
+                            startAdornment: (
+                              <EmailIcon sx={{ mr: 1 }} />
+                            ),
+                          }}
                         />
                       </Grid>
                       <Grid item xs={12} md={4}>
@@ -166,7 +249,9 @@ export default function Donor() {
                           label="Age"
                           type="number"
                           value={donorInfo.age}
-                          onChange={(e) => setDonorInfo({ ...donorInfo, age: e.target.value })}
+                          onChange={(e) =>
+                            setDonorInfo({ ...donorInfo, age: e.target.value })
+                          }
                           fullWidth
                           required
                         />
@@ -174,7 +259,11 @@ export default function Donor() {
                     </Grid>
                   </Box>
                   <Box sx={{ mb: 3 }}>
-                    <Typography sx={{ fontWeight: 600, mb: 1 }}>Donation Amount</Typography>
+                    <Typography
+                      sx={{ fontWeight: 600, mb: 1 }}
+                    >
+                      Donation Amount
+                    </Typography>
                     <TextField
                       label="Amount (KSh)"
                       type="number"
@@ -196,7 +285,12 @@ export default function Donor() {
                     variant="contained"
                     color="primary"
                     fullWidth
-                    sx={{ py: 1.5, fontWeight: 700, fontSize: 16, borderRadius: 2 }}
+                    sx={{
+                      py: 1.5,
+                      fontWeight: 700,
+                      fontSize: 16,
+                      borderRadius: 2,
+                    }}
                   >
                     Donate Now via M-Pesa
                   </Button>
