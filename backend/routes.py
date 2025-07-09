@@ -438,6 +438,8 @@ def get_kitty():
     }
     return jsonify(kitty)
 
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
 @bp.route('/api/student-dashboard', methods=['GET'])
 @jwt_required()
 def student_dashboard():
