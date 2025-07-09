@@ -352,10 +352,23 @@ export default function Admin() {
                 <Button
                   variant="contained"
                   startIcon={<CreditCardIcon />}
-                  onClick={() => setShowVoucherModal(true)}
+                  onClick={async () => {
+                    // Call backend to auto-allocate vouchers
+                    const res = await fetch("http://localhost:5000/api/vouchers", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                      alert(data.message);
+                      // Optionally refresh voucher stats here
+                    } else {
+                      alert(data.message || "Failed to generate vouchers.");
+                    }
+                  }}
                   sx={{ bgcolor: "#1976d2" }}
                 >
-                  Generate Vouchers
+                  Auto Allocate Monthly Vouchers
                 </Button>
               </Box>
               <Grid container spacing={2} mb={2}>

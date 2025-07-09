@@ -3,6 +3,8 @@ from flask_jwt_extended import get_jwt_identity, jwt_required, create_access_tok
 from .models import db, User, Application, Voucher, Donation, Feedback
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
+from datetime import datetime, timedelta
+import random, string
 
 
 bp = Blueprint('api', __name__)
@@ -274,13 +276,9 @@ def generate_monthly_vouchers():
     num_students = len(students)
     voucher_value = 300  # Or fetch from system config if dynamic
 
-    # Use the same hardcoded or config-based kitty as /api/kitty
-    kitty = {
-        "totalFunds": 100000, 
-        "availableFunds": 80000,
-        "lastUpdated": "2025-07-06T12:00:00"
-    }
-    available_funds = kitty["availableFunds"]
+    # Fetch available funds from meal kitty (replace with your actual model)
+    meal_kitty = MealKitty.query.first()
+    available_funds = meal_kitty.availableFunds
 
     if num_students == 0 or available_funds < voucher_value:
         return jsonify({"message": "Not enough funds or students"}), 400
@@ -307,9 +305,8 @@ def generate_monthly_vouchers():
             )
             db.session.add(voucher)
 
-    # NOTE: This does NOT persistently update the kitty funds, since it's hardcoded.
-    # In production, you should store and update kitty funds in the database.
-
+    # Deduct used funds from meal kitty
+    meal_kitty.availableFunds -= (voucher_value * num_students * max_vouchers_per_student)
     db.session.commit()
 
     return jsonify({"message": f"{int(max_vouchers_per_student)} vouchers allocated per student for this month"}), 201
