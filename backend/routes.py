@@ -3,7 +3,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required, create_access_tok
 from .models import db, User, Application, Voucher, Donation, Feedback
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
-from backend import db
+
 
 bp = Blueprint('api', __name__)
 
@@ -29,11 +29,12 @@ def register():
     if User.query.filter_by(student_id=student_id).first():
         return jsonify({"message": "Student ID already registered"}), 400
 
+    hashed_pw = generate_password_hash(password)
     user = User(
         student_id=student_id,
         name=name,
         email=email,
-        password=password,
+        password=hashed_pw,
         phone=phone,
         course=course,
         year_of_study=year_of_study
@@ -41,8 +42,6 @@ def register():
     db.session.add(user)
     db.session.commit()
     return jsonify({"message": "Registration successful"}), 201
-
-from flask_jwt_extended import create_access_token
 
 @bp.route('/api/login', methods=['POST'])
 def login():
@@ -257,6 +256,8 @@ def get_vouchers(user_id):
         'id': v.id, 'code': v.code, 'meal_type': v.meal_type, 'valid_until': v.valid_until, 'status': v.status
     } for v in vouchers])
 
+
+
 @bp.route('/api/vouchers/use', methods=['POST'])
 def use_voucher():
     data = request.get_json()
@@ -267,26 +268,51 @@ def use_voucher():
     return jsonify({"message": "Voucher redeemed"}), 200
 
 @bp.route('/api/vouchers', methods=['POST'])
-def generate_vouchers():
-    data = request.get_json()
-    student_ids = data.get('studentIds')
-    voucher_value = data.get('voucherValue')
-    count = data.get('count')
-    # For each student, create 'count' vouchers in DB
-    for student_id in student_ids:
-        for _ in range(count):
-            # Create voucher record in DB
-            pass
-    return jsonify({"message": "Vouchers generated"}), 201
+def generate_monthly_vouchers():
+    # Fetch all approved students
+    students = User.query.filter_by(role="student").all()
+    num_students = len(students)
+    voucher_value = 300  # Or fetch from system config if dynamic
 
-@bp.route('/api/vouchers/<student_id>', methods=['GET'])
-def get_student_vouchers(student_id):
-    # Query DB for vouchers where user_id == student_id and status == "Active"
-    vouchers = [
-        {"code": "VCH123", "value": 300, "status": "Active"},
-        # ...
-    ]
-    return jsonify(vouchers)
+    # Use the same hardcoded or config-based kitty as /api/kitty
+    kitty = {
+        "totalFunds": 100000, 
+        "availableFunds": 80000,
+        "lastUpdated": "2025-07-06T12:00:00"
+    }
+    available_funds = kitty["availableFunds"]
+
+    if num_students == 0 or available_funds < voucher_value:
+        return jsonify({"message": "Not enough funds or students"}), 400
+
+    # Calculate max vouchers per student for the month
+    max_vouchers_per_student = available_funds // (voucher_value * num_students)
+    if max_vouchers_per_student == 0:
+        return jsonify({"message": "Insufficient funds for even one voucher per student"}), 400
+
+    # Set all vouchers to expire at the end of the current month
+    now = datetime.now()
+    month_end = (now.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    valid_until = month_end.strftime("%Y-%m-%d")
+
+    for student in students:
+        for _ in range(int(max_vouchers_per_student)):
+            code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+            voucher = Voucher(
+                code=code,
+                user_id=student.id,
+                meal_type="Lunch",  # Or configurable
+                valid_until=valid_until,
+                status="Available"
+            )
+            db.session.add(voucher)
+
+    # NOTE: This does NOT persistently update the kitty funds, since it's hardcoded.
+    # In production, you should store and update kitty funds in the database.
+
+    db.session.commit()
+
+    return jsonify({"message": f"{int(max_vouchers_per_student)} vouchers allocated per student for this month"}), 201
 
 # --- Donations ---
 @bp.route('/api/donations', methods=['POST'])
